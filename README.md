@@ -3,3 +3,5 @@
 - TensorBoardX
 - checkpoint saving, resuming
 - config with .yaml file
+# Reference
+- https://github.com/mindslab-ai/voicefilter
