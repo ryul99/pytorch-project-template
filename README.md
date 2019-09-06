@@ -1,4 +1,4 @@
-# PyTorch Deep Learning Template
+# Deep Learning Project Template for PyTorch
 ## Feature
 - TensorBoardX
 - checkpoint saving, resuming
