@@ -8,8 +8,8 @@ class Net(nn.Module):
         super(type(self), self).__init__()
         self.hp = hp
         self.window = torch.hann_window(window_length=hp.audio.win_length)
-        # model should be implemented
-
+        raise NotImplementedError
+    
     def forward(self, x):
         raise NotImplementedError
 
