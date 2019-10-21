@@ -1,6 +1,5 @@
 import numpy as np
 from tensorboardX import SummaryWriter
-from . import plotting as plt
 
 
 class Writer(SummaryWriter):

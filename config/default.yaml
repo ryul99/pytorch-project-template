@@ -2,11 +2,11 @@ data:
   num_classes: 7
   train: 'datasets/meta/train'
   test: 'datasets/meta/test'
-  file_format: '*-norm.wav'
+  file_format: '*.file_extension'
 ---
 train:
   num_workers: 16
-  batch_size: 60
+  batch_size: 64
   optimizer: 'adam'
   adam:
     initlr: 0.0003
@@ -19,14 +19,7 @@ test:
   batch_size: 64
 ---
 model:
-  temporal: 250
-  cluster:
-    K: 8
-    G: 2
-  dim: 512
-  loss:
-    scale: 1.0
-    margin: 0.0
+
 ---
 log:
   summary_interval: 1
