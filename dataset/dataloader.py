@@ -11,11 +11,11 @@ def create_dataloader(hp, args, train):
                           drop_last=True)
     else:
         return DataLoader(dataset=Dataset_(hp, args, False),
-                          batch_size=1,
+                          batch_size=hp.test.batch_size,
                           shuffle=False,
                           num_workers=hp.test.num_workers,
                           pin_memory=True,
-                          drop_last=False)
+                          drop_last=True)
 
 
 class Dataset_(Dataset):
@@ -24,6 +24,7 @@ class Dataset_(Dataset):
         self.args = args
         self.train = train
         self.data_dir = hp.data.train if train else hp.data.test
+        raise NotImplementedError
 
     def __len__(self):
         raise NotImplementedError
