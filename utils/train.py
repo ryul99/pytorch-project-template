@@ -73,7 +73,7 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
             }, save_path)
             logger.info("Saved checkpoint to: %s" % save_path)
 
-            validate(model, test_loader, writer, step)
+            validate(model, test_loader, writer, step, hp)
 
     except Exception as e:
         logger.info("Exiting due to exception: %s" % e)
