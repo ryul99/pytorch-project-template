@@ -5,7 +5,7 @@ import torch
 import itertools
 import traceback
 
-from .validation import validate
+from .validation import testing_model
 from .utils import get_commit_hash
 from model.model import Net
 
@@ -58,7 +58,7 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
                     raise Exception("Loss exploded")
 
                 if step % hp.log.summary_interval == 0:
-                    writer.log_training(loss, step)
+                    writer.train_logging(loss, step)
                     loader.set_description('Loss %.02f at step %d' % (loss, step))
 
             save_path = os.path.join(pt_dir, '%s_%s_%03d.pt' \
@@ -73,7 +73,7 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
             }, save_path)
             logger.info("Saved checkpoint to: %s" % save_path)
 
-            validate(model, test_loader, writer, step, hp)
+            testing_model(model, test_loader, writer, step, hp)
 
     except Exception as e:
         logger.info("Exiting due to exception: %s" % e)

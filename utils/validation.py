@@ -7,7 +7,7 @@ from sklearn.metrics import roc_curve
 from scipy.interpolate import interp1d
 
 
-def validate(model, test_loader, writer, step, hp):
+def testing_model(model, test_loader, writer, step, hp):
     model.eval()
     total_test_loss = 0
     with torch.no_grad():
@@ -18,6 +18,6 @@ def validate(model, test_loader, writer, step, hp):
 
         total_test_loss /= (len(test_loader.dataset) / hp.test.batch_size)
 
-        writer.validation_logging(total_test_loss, step)
+        writer.test_logging(total_test_loss, step)
 
     model.train()
