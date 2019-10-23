@@ -5,7 +5,7 @@ import torch
 import itertools
 import traceback
 
-from .validation import testing_model
+from .test_model import testing_model
 from .utils import get_commit_hash
 from model.model import Net
 

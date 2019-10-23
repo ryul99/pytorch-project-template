@@ -3,7 +3,7 @@ import time
 import logging
 import argparse
 
-from utils.train import train
+from utils.train_model import train
 from utils.hparams import HParam
 from utils.writer import Writer
 from dataset.dataloader import create_dataloader
