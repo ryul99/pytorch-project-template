@@ -1,10 +1,5 @@
 import tqdm
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from scipy.optimize import brentq
-from sklearn.metrics import roc_curve
-from scipy.interpolate import interp1d
 
 
 def testing_model(model, test_loader, writer, step, hp):
