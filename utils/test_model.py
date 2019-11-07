@@ -14,5 +14,3 @@ def testing_model(model, test_loader, writer, step, hp):
         total_test_loss /= (len(test_loader.dataset) / hp.test.batch_size)
 
         writer.test_logging(total_test_loss, step)
-
-    model.train()

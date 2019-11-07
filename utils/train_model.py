@@ -38,8 +38,8 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
         logger.info("Starting new training run.")
 
     try:
-        model.train()
         for epoch in itertools.count(init_epoch+1):
+            model.train()
             loader = tqdm.tqdm(train_loader, desc='Train data loader')
             for spec, target in loader:
                 spec = spec.cuda()
