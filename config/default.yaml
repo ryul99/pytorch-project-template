@@ -23,5 +23,6 @@ model:
 ---
 log:
   summary_interval: 1
+  chkpt_interval: 10
   chkpt_dir: 'chkpt'
   log_dir: 'logs'

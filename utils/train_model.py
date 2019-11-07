@@ -60,18 +60,17 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
                 if step % hp.log.summary_interval == 0:
                     writer.train_logging(loss, step)
                     loader.set_description('Loss %.02f at step %d' % (loss, step))
-
-            save_path = os.path.join(pt_dir, '%s_%s_%03d.pt' \
-                % (args.name, git_hash, epoch))
-            torch.save({
-                'model': model.state_dict(),
-                'optimizer': optimizer.state_dict(),
-                'step': step,
-                'epoch': epoch,
-                'hp_str': hp_str,
-                'git_hash': git_hash,
-            }, save_path)
-            logger.info("Saved checkpoint to: %s" % save_path)
+            if epoch % hp.log.chkpt_interval == 0:
+                save_path = os.path.join(pt_dir, '%s_%s_%03d.pt' % (args.name, git_hash, epoch))
+                torch.save({
+                    'model': model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'step': step,
+                    'epoch': epoch,
+                    'hp_str': hp_str,
+                    'git_hash': git_hash,
+                }, save_path)
+                logger.info("Saved checkpoint to: %s" % save_path)
 
             testing_model(model, test_loader, writer, step, hp)
 
