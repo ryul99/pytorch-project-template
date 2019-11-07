@@ -61,7 +61,7 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
                     writer.train_logging(loss, step)
                     loader.set_description('Loss %.02f at step %d' % (loss, step))
             if epoch % hp.log.chkpt_interval == 0:
-                save_path = os.path.join(pt_dir, '%s_%s_%03d.pt' % (args.name, git_hash, epoch))
+                save_path = os.path.join(pt_dir, '%s_%s_%05d.pt' % (args.name, git_hash, epoch))
                 torch.save({
                     'model': model.state_dict(),
                     'optimizer': optimizer.state_dict(),
