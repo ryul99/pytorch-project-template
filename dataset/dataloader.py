@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
-
+import glob
+import os
 
 def create_dataloader(hp, args, train):
     if train:
@@ -24,10 +25,14 @@ class Dataset_(Dataset):
         self.args = args
         self.train = train
         self.data_dir = hp.data.train if train else hp.data.test
+        self.dataset_files = sorted(map(os.path.abspath, glob.glob(os.path.join(self.data_dir, self.hp.data.file_format))))
+        self.dataset = list()
+        for dataset_file in self.dataset_files:
+            pass
         raise NotImplementedError
 
     def __len__(self):
-        raise NotImplementedError
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        raise NotImplementedError
+        return self.dataset[idx]
