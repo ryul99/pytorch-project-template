@@ -1,7 +1,7 @@
 data:
   num_classes: 7
-  train: 'datasets/meta/train'
-  test: 'datasets/meta/test'
+  train: 'dataset/meta/train'
+  test: 'dataset/meta/test'
   file_format: '*.file_extension'
 ---
 train:
