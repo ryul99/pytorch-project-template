@@ -6,7 +6,7 @@ import argparse
 from utils.train_model import train
 from utils.hparams import HParam
 from utils.writer import Writer
-from dataset.dataloader import create_dataloader
+from dataset.dataloader import create_dataloader, DataloaderMode
 
 
 def main():
@@ -45,8 +45,8 @@ def main():
         raise Exception("Please specify directories of data in %s" % args.config)
 
     writer = Writer(hp, log_dir)
-    train_loader = create_dataloader(hp, args, train=True)
-    test_loader = create_dataloader(hp, args, train=False)
+    train_loader = create_dataloader(hp, args, DataloaderMode.train)
+    test_loader = create_dataloader(hp, args, DataloaderMode.test)
 
     train(args, pt_dir, args.checkpoint_path, train_loader, test_loader, writer, logger, hp, hp_str)
 
