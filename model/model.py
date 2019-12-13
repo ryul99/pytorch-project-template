@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class Net(nn.Module):
     def __init__(self, hp):
-        super(type(self), self).__init__()
+        super(Net, self).__init__()
         self.hp = hp
         raise NotImplementedError
     

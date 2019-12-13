@@ -4,7 +4,7 @@ from tensorboardX import SummaryWriter
 
 class Writer(SummaryWriter):
     def __init__(self, hp, logdir):
-        super(type(self), self).__init__(logdir)
+        super(Writer, self).__init__(logdir)
         self.hp = hp
 
     def train_logging(self, train_loss, step):
