@@ -5,3 +5,4 @@ pyyaml
 sklearn
 matplotlib
 tensorboardX
+prefetch_generator
