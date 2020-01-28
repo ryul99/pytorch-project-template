@@ -10,7 +10,7 @@ from .utils import get_commit_hash
 from model.model import Net
 
 
-def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, hp, hp_str):
+def train(args, pt_dir, train_loader, test_loader, writer, logger, hp, hp_str):
     model = Net(hp).to(hp.model.device)
 
     if hp.train.optimizer == 'adam':
@@ -24,9 +24,9 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
     init_epoch = -1
     step = 0
 
-    if chkpt_path is not None:
-        logger.info("Resuming from checkpoint: %s" % chkpt_path)
-        checkpoint = torch.load(chkpt_path)
+    if args.checkpoint_path is not None:
+        logger.info("Resuming from checkpoint: %s" % args.checkpoint_path)
+        checkpoint = torch.load(args.checkpoint_path)
         model.load_state_dict(checkpoint['model'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         step = checkpoint['step']

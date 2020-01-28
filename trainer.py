@@ -53,7 +53,7 @@ def main():
     train_loader = create_dataloader(hp, args, DataloaderMode.train)
     test_loader = create_dataloader(hp, args, DataloaderMode.test)
 
-    train(args, pt_dir, args.checkpoint_path, train_loader, test_loader, writer, logger, hp, hp_str)
+    train(args, pt_dir, train_loader, test_loader, writer, logger, hp, hp_str)
 
 
 if __name__ == '__main__':
