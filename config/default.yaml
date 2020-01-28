@@ -19,7 +19,7 @@ test:
   batch_size: 64
 ---
 model:
-
+  device: 'cuda'
 ---
 log:
   summary_interval: 1

@@ -11,7 +11,7 @@ from model.model import Net
 
 
 def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, hp, hp_str):
-    model = Net(hp).cuda()
+    model = Net(hp).to(hp.model.device)
 
     if hp.train.optimizer == 'adam':
         optimizer = torch.optim.Adam(
@@ -42,8 +42,8 @@ def train(args, pt_dir, chkpt_path, train_loader, test_loader, writer, logger, h
             model.train()
             loader = tqdm.tqdm(train_loader, desc='Train data loader')
             for spec, target in loader:
-                spec = spec.cuda()
-                target = target.cuda()
+                spec = spec.to(hp.model.device)
+                target = target.to(hp.model.device)
                 output = model(spec)
                 loss = model.get_loss(output, target)
 
