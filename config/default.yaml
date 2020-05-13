@@ -22,6 +22,11 @@ model:
   device: 'cuda'
 ---
 log:
+  use_tensorboard: true
+  use_wandb: false
+  wandb_init_conf:
+    entity: ~
+    project: ~
   summary_interval: 1
   chkpt_interval: 10
   chkpt_dir: 'chkpt'

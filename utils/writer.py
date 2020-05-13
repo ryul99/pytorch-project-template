@@ -1,14 +1,26 @@
 import numpy as np
 from tensorboardX import SummaryWriter
+import wandb
 
 
 class Writer(SummaryWriter):
     def __init__(self, hp, logdir):
-        super(Writer, self).__init__(logdir)
         self.hp = hp
+        if hp.log.use_tensorboard:
+            self.tensorboard = SummaryWriter(logdir)
+        if hp.log.use_wandb:
+            wandb_init_conf = hp.log.wandb_init_conf
+            wandb_init_conf['config']=hp
+            wandb.init(**wandb_init_conf)
 
     def train_logging(self, train_loss, step):
-        self.add_scalar('train_loss', train_loss, step)
+        if self.hp.log.use_tensorboard:
+            self.tensorboard.add_scalar('train_loss', train_loss, step)
+        if self.hp.log.use_wandb:
+            wandb.log({'train_loss': train_loss}, step=step)
 
     def test_logging(self, test_loss, step):
-        self.add_scalar('test_loss', test_loss, step)
+        if self.hp.log.use_tensorboard:
+            self.tensorboard.add_scalar('test_loss', test_loss, step)
+        if self.hp.log.use_wandb:
+            wandb.log({'test_loss': test_loss}, step=step)
