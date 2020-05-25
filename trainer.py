@@ -5,7 +5,7 @@ import argparse
 import yaml
 
 from utils.train_model import train
-from utils.hparams import HParam
+from utils.hparams import load_hparam
 from utils.writer import Writer
 from dataset.dataloader import create_dataloader, DataloaderMode
 
@@ -19,9 +19,8 @@ def main():
     parser.add_argument('-n', '--name', type=str, required=True,
                         help="Name of the model. Used for both logging and saving chkpt.")
     args = parser.parse_args()
-    hp = HParam(args.config)
-
-    hp_str = yaml.dump(hp)
+    hp = load_hparam(args.config)
+    hp_str = yaml.dump(hp.to_dict())
     args_str = yaml.dump(vars(args))
 
     pt_dir = os.path.join(hp.log.chkpt_dir, args.name)
