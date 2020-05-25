@@ -1,8 +1,10 @@
 # Deep Learning Project Template for PyTorch
+Inspired by https://github.com/mindslab-ai/voicefilter
 ## Feature
 - TensorBoardX
 - checkpoint saving, resuming
-- config with .yaml file
+- config with yaml file
+- dot-access to config
 
 # Setup
 ## Install requirements
@@ -17,6 +19,3 @@
 
 ## Resume training from checkpoint
 - `python trainer.py -c path/to/config/file -n model_name - p path/to/checkpoint/file`
-
-# Reference
-- https://github.com/mindslab-ai/voicefilter
