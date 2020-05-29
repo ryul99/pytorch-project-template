@@ -26,7 +26,7 @@
 
 ### Code lint
 
-1. `pip install -r requirements-dev.txt` for install develop dependencies
+1. `pip install -r requirements-dev.txt` for install develop dependencies (this requires python 3.6 and above because of black)
 
 1. `pre-commit install` for adding pre-commit to git hook
 
