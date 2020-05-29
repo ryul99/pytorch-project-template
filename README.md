@@ -1,5 +1,7 @@
 # Deep Learning Project Template for PyTorch
-Inspired by https://github.com/mindslab-ai/voicefilter
+## Inspired by 
+- https://github.com/open-mmlab/mmsr
+- https://github.com/mindslab-ai/voicefilter
 ## Feature
 - TensorBoardX
 - checkpoint saving, resuming
