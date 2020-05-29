@@ -7,10 +7,9 @@
 
 ## Feature
 
-- TensorBoardX
-- checkpoint saving, resuming
-- config with yaml file
-- dot-access to config
+- TensorBoardX / [wandb](https://www.wandb.com/) support
+- training state and network checkpoint saving, loading
+- config with yaml file / easy dot-style access to config
 - code lint / CI
 
 ## Setup
@@ -33,7 +32,3 @@
 ## Train
 
 - `python trainer.py -c config/path/to/file -n model_name`
-
-### Resume training from checkpoint
-
-- `python trainer.py -c path/to/config/file -n model_name - p path/to/checkpoint/file`

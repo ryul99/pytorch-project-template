@@ -5,6 +5,7 @@ data:
   file_format: '*.file_extension'
 ---
 train:
+  num_iter: 10000  # max iteration
   num_workers: 16
   batch_size: 64
   optimizer: 'adam'
@@ -22,6 +23,7 @@ model:
   device: 'cuda'
 ---
 log:
+  name: 'Fisrt_training'
   use_tensorboard: true
   use_wandb: false
   wandb_init_conf:
@@ -31,3 +33,9 @@ log:
   chkpt_interval: 10
   chkpt_dir: 'chkpt'
   log_dir: 'logs'
+---
+load:
+  wandb_load_path: ~
+  network_chkpt_path: ./test.pt
+  strict_load: false
+  resume_state_path: ~

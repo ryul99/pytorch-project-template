@@ -1,16 +1,106 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import torch.nn
+from torch.nn.parallel import DataParallel, DistributedDataParallel
+from collections import OrderedDict
+import os.path as osp
+import wandb
+
+from .model_arch import Net_arch
+from utils.utils import DotDict
 
 
-class Net(nn.Module):
+class Model:
     def __init__(self, hp):
-        super(Net, self).__init__()
         self.hp = hp
-        raise NotImplementedError
-    
-    def forward(self, x):
-        raise NotImplementedError
+        self.device = hp.model.device
+        self.net = Net_arch(hp).to(self.device)
+        self.input = None
+        self.GT = None
+        self.step = 0
+        self.epoch = -1
 
-    def get_loss(self, output, target):
-        raise NotImplementedError
+        # init optimizer
+        if hp.train.optimizer == "adam":
+            self.optimizer = torch.optim.Adam(
+                self.net.parameters(), lr=hp.train.adam.initlr
+            )
+        else:
+            raise Exception("%s optimizer not supported" % hp.train.optimizer)
+
+        # init loss
+        self.loss_f = torch.nn.MSELoss()
+        self.log = DotDict()
+
+    def feed_data(self, **data):  # data's keys: input, GT
+        self.input = data["input"].to(self.hp.model.device)
+        self.GT = data["GT"].to(self.hp.model.device)
+
+    def optimize_parameters(self):
+        self.net.train()
+        self.optimizer.zero_grad()
+        output = self.net(self.input)
+        loss_v = self.loss_f(self.GT, output)
+        loss_v.backward()
+        self.optimizer.step()
+
+        # set log
+        self.log.loss_v = loss_v.item()
+
+    def save_network(self, logger):
+        save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
+        save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+        state_dict = self.net.state_dict()
+        for key, param in state_dict.items():
+            state_dict[key] = param.cpu()
+        torch.save(state_dict, save_path)
+        if self.hp.use_wandb:
+            torch.save(state_dict, osp.join(wandb.run.dir, save_filename))
+            wandb.save(osp.join(wandb.run.dir, save_filename))
+        logger.info("Saved network checkpoint to: %s" % save_path)
+
+    def load_network(self, loaded_clean_net=None, logger=None):
+        if loaded_clean_net is None:
+            if self.hp.log.use_wandb is not None:
+                self.hp.load.network_chkpt_path = wandb.restore(
+                    self.hp.load.network_chkpt_path,
+                    run_path=self.hp.load.wandb_load_path,
+                ).name
+            loaded_net = torch.load(self.hp.load.network_chkpt_path)
+            loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
+            for k, v in loaded_net.items():
+                if k.startswith("module."):
+                    loaded_clean_net[k[7:]] = v
+                else:
+                    loaded_clean_net[k] = v
+
+        self.net.load_state_dict(loaded_clean_net, strict=self.hp.load.strict_load)
+        if logger is not None:
+            logger.info("Checkpoint %s is loaded" % self.hp.load.network_chkpt_path)
+
+    def save_training_state(self, logger):
+        save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
+        save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+        state = {
+            "model": self.net.state_dict(),
+            "optimizer": self.optimizer.state_dict(),
+            "step": self.step,
+            "epoch": self.epoch,
+        }
+        torch.save(state, save_path)
+        if self.hp.log.use_wandb:
+            torch.save(state, osp.join(wandb.run.dir, save_filename))
+            wandb.save(osp.join(wandb.run.dir, save_filename))
+        logger.info("Saved training state to: %s" % save_path)
+
+    def load_training_state(self, logger):
+        if self.hp.log.use_wandb is not None:
+            self.hp.load.resume_state_path = wandb.restore(
+                self.hp.load.resume_state_path, run_path=self.hp.load.wandb_load_path
+            ).name
+        resume_state = torch.load(self.hp.load.resume_state_path)
+
+        self.load_network(loaded_clean_net=resume_state["model"], logger=logger)
+        self.optimizer.load_state_dict(resume_state["optimizer"])
+        self.step = resume_state["step"]
+        self.epoch = resume_state["epoch"]
+        logger.info("Resuming from training state: %s" % self.hp.load.resume_state_path)
