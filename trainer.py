@@ -27,11 +27,11 @@ def train_loop(hp, logger):
         logger.info("Starting new training run.")
 
     try:
-        for epoch in itertools.count(model.epoch + 1):
-            if epoch > hp.train.num_iter:
+        for model.epoch in itertools.count(model.epoch + 1):
+            if model.epoch > hp.train.num_iter:
                 break
             train_model(hp, model, train_loader, writer, logger)
-            if epoch % hp.log.chkpt_interval == 0:
+            if model.epoch % hp.log.chkpt_interval == 0:
                 model.save_network(logger)
                 model.save_training_state(logger)
             test_model(hp, model, test_loader, writer)
