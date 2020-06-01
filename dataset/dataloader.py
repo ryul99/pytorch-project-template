@@ -18,8 +18,12 @@ class DataLoader_(DataLoader):
 
 
 def create_dataloader(hp, mode):
+    if hp.data.use_background_generator:
+        data_loader = DataLoader_
+    else:
+        data_loader = DataLoader
     if mode is DataloaderMode.train:
-        return DataLoader_(
+        return data_loader(
             dataset=Dataset_(hp, mode),
             batch_size=hp.train.batch_size,
             shuffle=True,
@@ -28,7 +32,7 @@ def create_dataloader(hp, mode):
             drop_last=True,
         )
     elif mode is DataloaderMode.test:
-        return DataLoader_(
+        return data_loader(
             dataset=Dataset_(hp, mode),
             batch_size=hp.test.batch_size,
             shuffle=False,

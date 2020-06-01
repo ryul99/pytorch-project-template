@@ -3,6 +3,7 @@ data:
   train: 'dataset/meta/train'
   test: 'dataset/meta/test'
   file_format: '*.file_extension'
+  use_background_generator: true
 ---
 train:
   num_iter: 10000  # max iteration
