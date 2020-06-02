@@ -5,15 +5,14 @@ from collections import OrderedDict
 import os.path as osp
 import wandb
 
-from .model_arch import Net_arch
 from utils.utils import DotDict
 
 
 class Model:
-    def __init__(self, hp):
+    def __init__(self, hp, net_arch, loss_f):
         self.hp = hp
         self.device = hp.model.device
-        self.net = Net_arch(hp).to(self.device)
+        self.net = net_arch.to(self.device)
         self.input = None
         self.GT = None
         self.step = 0
@@ -28,7 +27,7 @@ class Model:
             raise Exception("%s optimizer not supported" % hp.train.optimizer)
 
         # init loss
-        self.loss_f = torch.nn.MSELoss()
+        self.loss_f = loss_f
         self.log = DotDict()
 
     def feed_data(self, **data):  # data's keys: input, GT

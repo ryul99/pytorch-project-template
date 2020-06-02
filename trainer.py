@@ -5,7 +5,9 @@ import argparse
 import yaml
 import itertools
 import traceback
+import torch
 
+from model.model_arch import Net_arch
 from model.model import Model
 from utils.train_model import train_model
 from utils.test_model import test_model
@@ -19,7 +21,10 @@ def train_loop(hp, logger):
     test_loader = create_dataloader(hp, DataloaderMode.test)
     writer = Writer(hp, hp.log.log_dir)
 
-    model = Model(hp)
+    # init Model
+    net_arch = Net_arch(hp)
+    loss_f = torch.nn.MSELoss()
+    model = Model(hp, net_arch, loss_f)
 
     if hp.load.resume_state_path is not None:
         model.load_training_state(logger)
