@@ -17,7 +17,9 @@ from dataset.dataloader import create_dataloader, DataloaderMode
 
 
 def train_loop(hp, logger):
+    logger.info("Making train dataloader...")
     train_loader = create_dataloader(hp, DataloaderMode.train)
+    logger.info("Making test dataloader...")
     test_loader = create_dataloader(hp, DataloaderMode.test)
     writer = Writer(hp, hp.log.log_dir)
 
@@ -81,9 +83,8 @@ def main():
     logger = logging.getLogger()
 
     hp_str = yaml.dump(hp.to_dict())
-    logger.info("Config by yaml file")
+    logger.info("Config:")
     logger.info(hp_str)
-    logger.info("Command Line Config")
 
     if hp.data.train == "" or hp.data.test == "":
         logger.error("train or test data directory cannot be empty.")
