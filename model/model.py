@@ -45,6 +45,11 @@ class Model:
         # set log
         self.log.loss_v = loss_v.item()
 
+    def inference(self):
+        self.net.eval()
+        output = self.net(self.input)
+        return output
+
     def save_network(self, logger):
         save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
         save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
