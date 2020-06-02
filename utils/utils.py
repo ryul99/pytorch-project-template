@@ -4,11 +4,11 @@ import yaml
 
 def get_commit_hash():
     message = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
-    return message.strip().decode('utf-8')
+    return message.strip().decode("utf-8")
 
 
 def load_hparam(filename):
-    stream = open(filename, 'r')
+    stream = open(filename, "r")
     docs = yaml.load_all(stream, Loader=yaml.Loader)
     hparam_dict = DotDict()
     for doc in docs:
