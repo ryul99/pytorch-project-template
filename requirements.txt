@@ -1,6 +1,5 @@
 tqdm
 numpy
-torch
 pyyaml
 sklearn
 matplotlib

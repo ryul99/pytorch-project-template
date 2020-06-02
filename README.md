@@ -18,8 +18,9 @@
 
 ### Install requirements
 
-- python3
+- python3 (3.6, 3.7, 3.8 is tested)
 - `pip install -r requirements.txt`
+- proper PyTorch install (https://pytorch.org/get-started/)
 
 ### Config
 
