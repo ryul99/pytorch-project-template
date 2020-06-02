@@ -32,7 +32,7 @@ class Model:
 
     def feed_data(self, **data):  # data's keys: input, GT
         for k, v in data.items():
-            data[k] = v.to(hp.model.device)
+            data[k] = v.to(self.hp.model.device)
         self.input = data.get("input")
         self.GT = data.get("GT")
 
