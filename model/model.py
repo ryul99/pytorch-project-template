@@ -31,8 +31,10 @@ class Model:
         self.log = DotDict()
 
     def feed_data(self, **data):  # data's keys: input, GT
-        self.input = data["input"].to(self.hp.model.device)
-        self.GT = data["GT"].to(self.hp.model.device)
+        for k, v in data.items():
+            data[k] = v.to(hp.model.device)
+        self.input = data.get("input")
+        self.GT = data.get("GT")
 
     def optimize_parameters(self):
         self.net.train()
