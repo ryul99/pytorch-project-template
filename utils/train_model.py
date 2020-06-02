@@ -3,6 +3,7 @@ import tqdm
 
 
 def train_model(hp, model, train_loader, writer, logger):
+    model.net.train()
     loader = tqdm.tqdm(train_loader, desc="Train data loader")
     for input_, target in loader:
         model.feed_data(input=input_, GT=target)
