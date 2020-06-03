@@ -98,7 +98,7 @@ def main():
     logger.info("Config:")
     logger.info(hp_str)
 
-    if hp.data.train == "" or hp.data.test == "":
+    if hp.data.train_dir == "" or hp.data.test_dir == "":
         logger.error("train or test data directory cannot be empty.")
         raise Exception("Please specify directories of data in %s" % args.config)
 

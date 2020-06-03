@@ -1,6 +1,6 @@
 data:
-  train: 'dataset/meta/train'
-  test: 'dataset/meta/test'
+  train_dir: 'dataset/meta/train'
+  test_dir: 'dataset/meta/test'
   file_format: '*.file_extension'
   use_background_generator: true
 ---
