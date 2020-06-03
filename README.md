@@ -8,11 +8,13 @@
 ## Feature
 
 - TensorBoardX / [wandb](https://www.wandb.com/) support
-- background generator is used ([reason of using background generator](https://github.com/IgorSusmelj/pytorch-styleguide/issues/5))
+- Background generator is used ([reason of using background generator](https://github.com/IgorSusmelj/pytorch-styleguide/issues/5))
   - In Windows, background generator could not be supported. So if error occurs, set false to `use_background_generator` in config
-- training state and network checkpoint saving, loading
-- config with yaml file / easy dot-style access to config
-- code lint / CI
+- Training state and network checkpoint saving, loading
+    - Training state includes not only network weights, but also optimizer, step, epoch.
+    - Checkpoint includes only network weights. This could be used for inference. 
+- Config with yaml file / easy dot-style access to config
+- Code lint / CI
 
 ## Setup
 
@@ -24,7 +26,7 @@
 
 ### Config
 
-- config is written in yaml file(default: `config/default.yaml`)
+- Config is written in yaml file(default: `config/default.yaml`)
 - data field
     - Configs for Dataloader
     - glob `train_dir` / `test_dir` with `file_format` for Dataloader
