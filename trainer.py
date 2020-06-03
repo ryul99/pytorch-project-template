@@ -6,22 +6,23 @@ import yaml
 import itertools
 import traceback
 import torch
+import random
 
 from model.model_arch import Net_arch
 from model.model import Model
 from utils.train_model import train_model
 from utils.test_model import test_model
-from utils.utils import load_hparam
+from utils.utils import load_hparam, set_random_seed
 from utils.writer import Writer
 from dataset.dataloader import create_dataloader, DataloaderMode
 
 
-def train_loop(hp, logger):
+def train_loop(hp, logger, writer):
+    # make dataloader
     logger.info("Making train dataloader...")
     train_loader = create_dataloader(hp, DataloaderMode.train)
     logger.info("Making test dataloader...")
     test_loader = create_dataloader(hp, DataloaderMode.test)
-    writer = Writer(hp, hp.log.log_dir)
 
     # init Model
     net_arch = Net_arch(hp)
@@ -82,6 +83,9 @@ def main():
     )
     logger = logging.getLogger()
 
+    # set writer (tensorboard / wandb)
+    writer = Writer(hp, hp.log.log_dir)
+
     hp_str = yaml.dump(hp.to_dict())
     logger.info("Config:")
     logger.info(hp_str)
@@ -90,7 +94,7 @@ def main():
         logger.error("train or test data directory cannot be empty.")
         raise Exception("Please specify directories of data in %s" % args.config)
 
-    train_loop(hp, logger)
+    train_loop(hp, logger, writer)
 
 
 if __name__ == "__main__":
