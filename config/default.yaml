@@ -1,5 +1,4 @@
 data:
-  num_classes: 7
   train: 'dataset/meta/train'
   test: 'dataset/meta/test'
   file_format: '*.file_extension'
