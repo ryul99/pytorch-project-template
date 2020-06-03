@@ -66,11 +66,19 @@ def main():
 
     if args.name is not None:
         hp.log.name = args.name
+
+    # random seed
+    if hp.train.random_seed is None:
+        hp.train.random_seed = random.randint(1, 10000)
+    set_random_seed(hp.train.random_seed)
+
+    # set log/checkpoint dir
     hp.log.chkpt_dir = os.path.join(hp.log.chkpt_dir, hp.log.name)
     hp.log.log_dir = os.path.join(hp.log.log_dir, hp.log.name)
     os.makedirs(hp.log.chkpt_dir, exist_ok=True)
     os.makedirs(hp.log.log_dir, exist_ok=True)
 
+    # set logger
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
