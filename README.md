@@ -16,6 +16,17 @@
 - Config with yaml file / easy dot-style access to config
 - Code lint / CI
 
+## Code Structure
+
+- `config` dir: folder for config files
+- `dataset` dir: dataloader and dataset codes are here. Also, put dataset in `meta` dir.
+- `model` dir: `model.py` is for wrapping network architecture. `model_arch.py` is for coding network architecture.
+- `utils` dir:
+    - `train_model.py` and `test_model.py` are for train and test model once.
+    - `utils.py` is for utility. random seed setting, dot-access hyper parameter, get commit hash, etc are here. 
+    - `writer.py` is for writing logs in tensorboard / wandb.
+- `trainer.py` file: this is for setting up and iterating epoch.
+
 ## Setup
 
 ### Install requirements
