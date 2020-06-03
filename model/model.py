@@ -59,7 +59,7 @@ class Model:
         for key, param in state_dict.items():
             state_dict[key] = param.cpu()
         torch.save(state_dict, save_path)
-        if self.hp.use_wandb:
+        if self.hp.log.use_wandb:
             torch.save(state_dict, osp.join(wandb.run.dir, save_filename))
             wandb.save(osp.join(wandb.run.dir, save_filename))
         logger.info("Saved network checkpoint to: %s" % save_path)
