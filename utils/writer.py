@@ -9,8 +9,8 @@ class Writer(SummaryWriter):
         if hp.log.use_tensorboard:
             self.tensorboard = SummaryWriter(logdir)
         if hp.log.use_wandb:
-            wandb_init_conf = hp.log.wandb_init_conf
-            wandb_init_conf["config"] = hp
+            wandb_init_conf = hp.log.wandb_init_conf.to_dict()
+            wandb_init_conf["config"] = hp.to_dict()
             wandb.init(**wandb_init_conf)
 
     def train_logging(self, train_loss, step):
