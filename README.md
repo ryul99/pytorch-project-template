@@ -38,23 +38,23 @@
 ### Config
 
 - Config is written in yaml file(default: `config/default.yaml`)
-- data field
+- `data` field
     - Configs for Dataloader.
     - glob `train_dir` / `test_dir` with `file_format` for Dataloader.
-- train/test field
+- `train`/`test` field
     - Configs for training options.
     - `random_seed` is for setting python, numpy, pytorch random seed.
     - `num_iter` is for end iteration step of training.
     - `optimizer` is for selecting optimizer. Only `adam optimizer` is supported for now.
-- model field
+- `model` field
     - Configs for Network architecture and options for model like device.
     - You can add configs in yaml format to config your network.
-- log field
+- `log` field
     - Configs for logging include tensorboard / wandb logging.
     - `name` is train name you run. 
     - `summary_interval` and `checkpoint_interval` are interval of step between training logging and checkpoint saving.
     - checkpoint and logs (include tensorboard) are saved under `chkpt_dir/name` and `log_dir/name`.
-- load field
+- `load` field
     - loading from wandb server is supported
     - `wandb_load_path` is `Run path` in overview of run. If you don't want to use wandb load, this field should be `~`.
     - `network_chkpt_path` is path to network checkpoint file.
@@ -70,4 +70,5 @@
 
 ## Train
 
-- `python trainer.py -c config/path/to/file -n model_name`
+- `python trainer.py -c config/path/to/file -n training_name`
+    - If training name is specified in config, you can omit training name in command line argument.
