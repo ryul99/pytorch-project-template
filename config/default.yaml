@@ -30,8 +30,8 @@ log:
   wandb_init_conf:
     entity: ~
     project: ~
-  summary_interval: 1
-  chkpt_interval: 10
+  summary_interval: 1 # interval of step
+  chkpt_interval: 10 # interval of epoch
   chkpt_dir: 'chkpt'
   log_dir: 'logs'
 ---

@@ -52,7 +52,7 @@
 - `log` field
     - Configs for logging include tensorboard / wandb logging.
     - `name` is train name you run. 
-    - `summary_interval` and `checkpoint_interval` are interval of step between training logging and checkpoint saving.
+    - `summary_interval` and `checkpoint_interval` are interval of step and epoch between training logging and checkpoint saving.
     - checkpoint and logs (include tensorboard) are saved under `chkpt_dir/name` and `log_dir/name`.
 - `load` field
     - loading from wandb server is supported
