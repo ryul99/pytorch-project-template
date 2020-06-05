@@ -9,12 +9,13 @@ train:
   num_iter: 10000  # max iteration
   num_workers: 16
   batch_size: 64
-  optimizer: 'adam'
-  adam_options:
-    lr: 0.001
-    betas:
-      - 0.9
-      - 0.999
+  optimizer:
+    mode: 'adam'
+    adam:
+      lr: 0.001
+      betas:
+        - 0.9
+        - 0.999
 ---
 test:
   num_workers: 16

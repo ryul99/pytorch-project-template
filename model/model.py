@@ -19,12 +19,13 @@ class Model:
         self.epoch = -1
 
         # init optimizer
-        if hp.train.optimizer == "adam":
+        optimizer_mode = hp.train.optimizer.mode
+        if optimizer_mode == "adam":
             self.optimizer = torch.optim.Adam(
-                self.net.parameters(), **hp.train.adam_options
+                self.net.parameters(), **(hp.train.optimizer[optimizer_mode])
             )
         else:
-            raise Exception("%s optimizer not supported" % hp.train.optimizer)
+            raise Exception("%s optimizer not supported" % optimizer_mode)
 
         # init loss
         self.loss_f = loss_f
