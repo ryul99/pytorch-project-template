@@ -1,10 +1,5 @@
 # Deep Learning Project Template for PyTorch
 
-## Inspired by
-
-- https://github.com/open-mmlab/mmsr
-- https://github.com/mindslab-ai/voicefilter
-
 ## Feature
 
 - TensorBoardX / [wandb](https://www.wandb.com/) support
@@ -72,3 +67,8 @@
 
 - `python trainer.py -c config/path/to/file -n training_name`
     - If training name is specified in config, you can omit training name in command line argument.
+
+## Inspired by
+
+- https://github.com/open-mmlab/mmsr
+- https://github.com/mindslab-ai/voicefilter
