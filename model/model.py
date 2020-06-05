@@ -60,8 +60,7 @@ class Model:
             state_dict[key] = param.cpu()
         torch.save(state_dict, save_path)
         if self.hp.log.use_wandb:
-            torch.save(state_dict, osp.join(wandb.run.dir, save_filename))
-            wandb.save(osp.join(wandb.run.dir, save_filename))
+            wandb.save(save_path)
         logger.info("Saved network checkpoint to: %s" % save_path)
 
     def load_network(self, loaded_clean_net=None, logger=None):
@@ -94,8 +93,7 @@ class Model:
         }
         torch.save(state, save_path)
         if self.hp.log.use_wandb:
-            torch.save(state, osp.join(wandb.run.dir, save_filename))
-            wandb.save(osp.join(wandb.run.dir, save_filename))
+            wandb.save(save_path)
         logger.info("Saved training state to: %s" % save_path)
 
     def load_training_state(self, logger):
