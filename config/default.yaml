@@ -10,8 +10,11 @@ train:
   num_workers: 16
   batch_size: 64
   optimizer: 'adam'
-  adam:
-    initlr: 0.0003
+  adam_options:
+    lr: 0.001
+    betas:
+      - 0.9
+      - 0.999
 ---
 test:
   num_workers: 16

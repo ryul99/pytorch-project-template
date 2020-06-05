@@ -21,7 +21,7 @@ class Model:
         # init optimizer
         if hp.train.optimizer == "adam":
             self.optimizer = torch.optim.Adam(
-                self.net.parameters(), lr=hp.train.adam.initlr
+                self.net.parameters(), **hp.train.adam_options
             )
         else:
             raise Exception("%s optimizer not supported" % hp.train.optimizer)
