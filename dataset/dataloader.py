@@ -63,8 +63,8 @@ class Dataset_(Dataset):
         )
         self.dataset = list()
         for dataset_file in self.dataset_files:
+            # TODO: This is example code. You should change this part as you need
             pass
-        raise NotImplementedError
 
     def __len__(self):
         # TODO: This is example code. You should change this part as you need
