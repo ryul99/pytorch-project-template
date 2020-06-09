@@ -10,12 +10,14 @@
     - Checkpoint includes only network weights. This could be used for inference. 
 - Config with yaml file / easy dot-style access to config
 - Code lint / CI
+- Code Testing with pytest
 
 ## Code Structure
 
 - `config` dir: folder for config files
 - `dataset` dir: dataloader and dataset codes are here. Also, put dataset in `meta` dir.
 - `model` dir: `model.py` is for wrapping network architecture. `model_arch.py` is for coding network architecture.
+- `test` dir: folder for `pytest` testing codes
 - `utils` dir:
     - `train_model.py` and `test_model.py` are for train and test model once.
     - `utils.py` is for utility. random seed setting, dot-access hyper parameter, get commit hash, etc are here. 
@@ -27,8 +29,8 @@
 ### Install requirements
 
 - python3 (3.6, 3.7, 3.8 is tested)
+- Write PyTorch version which you want to `requirements.txt`. (https://pytorch.org/get-started/)
 - `pip install -r requirements.txt`
-- Install PyTorch you want. (https://pytorch.org/get-started/)
 
 ### Config
 
