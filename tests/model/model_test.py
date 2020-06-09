@@ -37,3 +37,18 @@ class TestModel:
         self.model.feed_data(input=self.input_, GT=self.gt)
         assert (self.model.input == device_input_).all()
         assert (self.model.GT == device_gt).all()
+
+    def test_run_network(self):
+        self.model.feed_data(input=self.input_, GT=self.gt)
+        output = self.model.run_network()
+        assert output.shape == self.model.GT.shape
+
+    def test_optimize_parameters(self):
+        self.model.feed_data(input=self.input_, GT=self.gt)
+        self.model.optimize_parameters()
+        assert self.model.log.loss_v is not None
+
+    def test_inference(self):
+        self.model.feed_data(input=self.input_, GT=self.gt)
+        output = self.model.inference()
+        assert output.shape == self.model.GT.shape
