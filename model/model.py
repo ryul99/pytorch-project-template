@@ -40,7 +40,7 @@ class Model:
     def optimize_parameters(self):
         self.net.train()
         self.optimizer.zero_grad()
-        output = self.net(self.input)
+        output = self.run_network()
         loss_v = self.loss_f(self.GT, output)
         loss_v.backward()
         self.optimizer.step()
@@ -50,6 +50,10 @@ class Model:
 
     def inference(self):
         self.net.eval()
+        output = self.run_network()
+        return output
+
+    def run_network(self):
         output = self.net(self.input)
         return output
 
