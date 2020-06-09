@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
+import torch
 import glob
 import os
 from enum import Enum, auto
@@ -66,7 +67,11 @@ class Dataset_(Dataset):
         raise NotImplementedError
 
     def __len__(self):
-        return len(self.dataset)
+        # TODO: This is example code. You should change this part as you need
+        # return len(self.dataset)
+        return 10
 
     def __getitem__(self, idx):
-        return self.dataset[idx]
+        # TODO: This is example code. You should change this part as you need
+        # return self.dataset[idx]
+        return torch.rand(10)
