@@ -7,9 +7,9 @@ def test_model(hp, model, test_loader, writer):
     total_test_loss = 0
     with torch.no_grad():
         for model_input, target in tqdm.tqdm(test_loader):
-            target = target.to(hp.model.device)
-            model_input = model_input.to(hp.model.device)
-            output = model.net(model_input)
+            model.feed_data(input=model_input, GT=target)
+            output = model.run_network()
+            loss_v = model.loss_f(output, target)
             total_test_loss += model.get_loss(output, target)
 
         total_test_loss /= len(test_loader.dataset) / hp.test.batch_size

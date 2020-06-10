@@ -33,7 +33,7 @@ class Model:
 
     def feed_data(self, **data):  # data's keys: input, GT
         for k, v in data.items():
-            data[k] = v.to(self.hp.model.device)
+            data[k] = v.to(self.device)
         self.input = data.get("input")
         self.GT = data.get("GT")
 
@@ -41,7 +41,7 @@ class Model:
         self.net.train()
         self.optimizer.zero_grad()
         output = self.run_network()
-        loss_v = self.loss_f(self.GT, output)
+        loss_v = self.loss_f(output, self.GT)
         loss_v.backward()
         self.optimizer.step()
 
