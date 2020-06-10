@@ -12,7 +12,7 @@ from model.model_arch import Net_arch
 from model.model import Model
 from utils.train_model import train_model
 from utils.test_model import test_model
-from utils.utils import load_hparam, set_random_seed
+from utils.utils import load_hparam, set_random_seed, DotDict
 from utils.writer import Writer
 from utils.logger import make_logger
 from dataset.dataloader import create_dataloader, DataloaderMode
@@ -35,6 +35,8 @@ def distributed_run(fn, hp, world_size):
 
 
 def train_loop(rank, hp, world_size=1):
+    # reload hp
+    hp = DotDict(hp)
     if world_size != 1:
         setup(hp, rank, world_size)
     if rank != 0:
@@ -121,7 +123,7 @@ def main():
     if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 1:
         train_loop(0, hp)
     else:
-        distributed_run(train_loop, hp, hp.train.dist.gpus)
+        distributed_run(train_loop, hp.to_dict(), hp.train.dist.gpus)
 
 
 if __name__ == "__main__":
