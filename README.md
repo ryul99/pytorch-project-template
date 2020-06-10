@@ -73,4 +73,5 @@
 ## Inspired by
 
 - https://github.com/open-mmlab/mmsr
+- https://github.com/allenai/allennlp (test case writing)
 - https://github.com/mindslab-ai/voicefilter
