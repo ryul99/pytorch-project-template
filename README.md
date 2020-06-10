@@ -17,7 +17,8 @@
 - `config` dir: folder for config files
 - `dataset` dir: dataloader and dataset codes are here. Also, put dataset in `meta` dir.
 - `model` dir: `model.py` is for wrapping network architecture. `model_arch.py` is for coding network architecture.
-- `test` dir: folder for `pytest` testing codes
+- `test` dir: folder for `pytest` testing codes. You can check your network's flow of tensor by fixing `tests/model/net_arch_test.py`. 
+Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `assert` phrase to check tensor.
 - `utils` dir:
     - `train_model.py` and `test_model.py` are for train and test model once.
     - `utils.py` is for utility. random seed setting, dot-access hyper parameter, get commit hash, etc are here. 
@@ -73,4 +74,5 @@
 ## Inspired by
 
 - https://github.com/open-mmlab/mmsr
+- https://github.com/allenai/allennlp (test case writing)
 - https://github.com/mindslab-ai/voicefilter

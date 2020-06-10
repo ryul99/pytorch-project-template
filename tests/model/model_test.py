@@ -1,20 +1,21 @@
 import pytest
 import torch
 import torch.nn as nn
+import os
+import logging
+from tests.test_case import ProjectTestCase
 from model.model_arch import Net_arch
 from model.model import Model
-from utils.utils import load_hparam
 
 
-class TestModel:
+class TestModel(ProjectTestCase):
     @classmethod
     def setup_class(cls):
         cls.input_ = torch.rand(64, 10)
         cls.gt = torch.rand(64, 1)
 
     def setup_method(self, method):
-        self.hp = load_hparam("config/default.yaml")
-        self.hp.model.device = "cpu"
+        super(TestModel, self).setup_method()
         self.net = Net_arch(self.hp)
         self.loss_f = nn.MSELoss()
         self.model = Model(self.hp, self.net, self.loss_f)
@@ -52,3 +53,49 @@ class TestModel:
         self.model.feed_data(input=self.input_, GT=self.gt)
         output = self.model.inference()
         assert output.shape == self.model.GT.shape
+
+    def test_save_load_network(self):
+        local_net = Net_arch(self.hp)
+        self.loss_f = nn.MSELoss()
+        local_model = Model(self.hp, local_net, self.loss_f)
+
+        self.model.save_network(self.logger)
+        save_filename = "%s_%d.pt" % (self.hp.log.name, self.model.step)
+        save_path = os.path.join(self.hp.log.chkpt_dir, save_filename)
+        self.hp.load.network_chkpt_path = save_path
+
+        assert os.path.exists(save_path) and os.path.isfile(save_path)
+        assert os.path.exists(self.hp.log.log_file_path) and os.path.isfile(
+            self.hp.log.log_file_path
+        )
+
+        local_model.load_network(logger=self.logger)
+        parameters = zip(
+            list(local_model.net.parameters()), list(self.model.net.parameters())
+        )
+        for load, origin in parameters:
+            assert (load == origin).all()
+
+    def test_save_load_state(self):
+        local_net = Net_arch(self.hp)
+        self.loss_f = nn.MSELoss()
+        local_model = Model(self.hp, local_net, self.loss_f)
+
+        self.model.save_training_state(self.logger)
+        save_filename = "%s_%d.state" % (self.hp.log.name, self.model.step)
+        save_path = os.path.join(self.hp.log.chkpt_dir, save_filename)
+        self.hp.load.resume_state_path = save_path
+
+        assert os.path.exists(save_path) and os.path.isfile(save_path)
+        assert os.path.exists(self.hp.log.log_file_path) and os.path.isfile(
+            self.hp.log.log_file_path
+        )
+
+        local_model.load_training_state(logger=self.logger)
+        parameters = zip(
+            list(local_model.net.parameters()), list(self.model.net.parameters())
+        )
+        for load, origin in parameters:
+            assert (load == origin).all()
+        assert local_model.epoch == self.model.epoch
+        assert local_model.step == self.model.step
