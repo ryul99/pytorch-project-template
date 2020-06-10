@@ -66,7 +66,7 @@ class Dataset_(Dataset):
             # TODO: This is example code. You should change this part as you need
             pass
         # TODO: This is example code. You should change this part as you need
-        self.dataset = [torch.rand(10) for _ in range(64)]
+        self.dataset = [(torch.rand(10), torch.rand(1)) for _ in range(64)]
 
         if world_size != 1:
             if len(self.dataset) % world_size != 0:
