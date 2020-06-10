@@ -57,6 +57,8 @@ def train_loop(rank, hp, world_size=1):
 
     if hp.model.device.lower() == "cuda" and world_size != 1:
         hp.model.device = rank
+    else:
+        hp.model.device = hp.model.device.lower()
 
     # make dataloader
     if logger is not None:
