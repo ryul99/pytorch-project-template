@@ -124,7 +124,7 @@ def main():
     if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 1:
         train_loop(0, hp, logger, writer)
     else:
-        distributed_run(train_loop, hp, logger, writer, hp.train.dist.world_size)
+        distributed_run(train_loop, hp, logger, writer, hp.train.dist.gpus)
 
 
 if __name__ == "__main__":
