@@ -9,8 +9,8 @@ def test_model(hp, model, test_loader, writer):
         for model_input, target in tqdm.tqdm(test_loader):
             model.feed_data(input=model_input, GT=target)
             output = model.run_network()
-            loss_v = model.loss_f(output, target)
-            total_test_loss += model.get_loss(output, target)
+            loss_v = model.loss_f(output, model.GT)
+            total_test_loss += loss_v.to("cpu").item()
 
         total_test_loss /= len(test_loader.dataset) / hp.test.batch_size
 
