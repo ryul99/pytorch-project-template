@@ -7,7 +7,6 @@ import os
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from torch.nn.parallel import DistributedDataParallel as DDP
 
 from model.model_arch import Net_arch
 from model.model import Model
@@ -31,17 +30,28 @@ def cleanup():
     dist.destroy_process_group()
 
 
-def distributed_run(fn, hp, logger, writer, world_size):
-    mp.spawn(fn, args=(hp, logger, writer, world_size,), nprocs=world_size, join=True)
+def distributed_run(fn, hp, world_size):
+    mp.spawn(fn, args=(hp, world_size,), nprocs=world_size, join=True)
 
 
-def train_loop(rank, hp, logger, writer, world_size=1):
-    logger.info("Set up train process")
+def train_loop(rank, hp, world_size=1):
     if world_size != 1:
         setup(hp, rank, world_size)
     if rank != 0:
         logger = None
         writer = None
+    else:
+        # set logger
+        logger = make_logger(hp)
+        # set writer (tensorboard / wandb)
+        writer = Writer(hp, hp.log.log_dir)
+        hp_str = yaml.dump(hp.to_dict())
+        logger.info("Config:")
+        logger.info(hp_str)
+        if hp.data.train_dir == "" or hp.data.test_dir == "":
+            logger.error("train or test data directory cannot be empty.")
+            raise Exception("Please specify directories of data")
+        logger.info("Set up train process")
 
     if hp.model.device.lower() == "cuda" and world_size != 1:
         hp.model.device = rank
@@ -59,6 +69,7 @@ def train_loop(rank, hp, logger, writer, world_size=1):
     loss_f = torch.nn.MSELoss()
     model = Model(hp, net_arch, loss_f, rank, world_size)
 
+    # load training state
     if hp.load.resume_state_path is not None:
         model.load_training_state(logger)
     else:
@@ -107,24 +118,10 @@ def main():
         hp.train.random_seed = random.randint(1, 10000)
     set_random_seed(hp.train.random_seed)
 
-    # set logger
-    logger = make_logger(hp)
-
-    # set writer (tensorboard / wandb)
-    writer = Writer(hp, hp.log.log_dir)
-
-    hp_str = yaml.dump(hp.to_dict())
-    logger.info("Config:")
-    logger.info(hp_str)
-
-    if hp.data.train_dir == "" or hp.data.test_dir == "":
-        logger.error("train or test data directory cannot be empty.")
-        raise Exception("Please specify directories of data in %s" % args.config)
-
     if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 1:
-        train_loop(0, hp, logger, writer)
+        train_loop(0, hp)
     else:
-        distributed_run(train_loop, hp, logger, writer, hp.train.dist.gpus)
+        distributed_run(train_loop, hp, hp.train.dist.gpus)
 
 
 if __name__ == "__main__":
