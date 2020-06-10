@@ -2,8 +2,12 @@ import argparse
 import yaml
 import itertools
 import traceback
-import torch
 import random
+import os
+import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 from model.model_arch import Net_arch
 from model.model import Model
@@ -15,22 +19,51 @@ from utils.logger import make_logger
 from dataset.dataloader import create_dataloader, DataloaderMode
 
 
-def train_loop(hp, logger, writer):
+def setup(hp, rank, world_size):
+    os.environ["MASTER_ADDR"] = hp.train.dist.master_addr
+    os.environ["MASTER_PORT"] = hp.train.dist.master_port
+
+    # initialize the process group
+    dist.init_process_group(hp.train.dist.mode, rank=rank, world_size=world_size)
+
+
+def cleanup():
+    dist.destroy_process_group()
+
+
+def distributed_run(fn, hp, logger, writer, world_size):
+    mp.spawn(fn, args=(hp, logger, writer, world_size,), nprocs=world_size, join=True)
+
+
+def train_loop(rank, hp, logger, writer, world_size=1):
+    logger.info("Set up train process")
+    if world_size != 1:
+        setup(hp, rank, world_size)
+    if rank != 0:
+        logger = None
+        writer = None
+
+    if hp.model.device.lower() == "cuda" and world_size != 1:
+        hp.model.device = rank
+
     # make dataloader
-    logger.info("Making train dataloader...")
-    train_loader = create_dataloader(hp, DataloaderMode.train)
-    logger.info("Making test dataloader...")
-    test_loader = create_dataloader(hp, DataloaderMode.test)
+    if logger is not None:
+        logger.info("Making train dataloader...")
+    train_loader = create_dataloader(hp, DataloaderMode.train, rank, world_size)
+    if logger is not None:
+        logger.info("Making test dataloader...")
+    test_loader = create_dataloader(hp, DataloaderMode.test, rank, world_size)
 
     # init Model
     net_arch = Net_arch(hp)
     loss_f = torch.nn.MSELoss()
-    model = Model(hp, net_arch, loss_f)
+    model = Model(hp, net_arch, loss_f, rank, world_size)
 
     if hp.load.resume_state_path is not None:
         model.load_training_state(logger)
     else:
-        logger.info("Starting new training run.")
+        if logger is not None:
+            logger.info("Starting new training run.")
 
     try:
         for model.epoch in itertools.count(model.epoch + 1):
@@ -41,10 +74,14 @@ def train_loop(hp, logger, writer):
                 model.save_network(logger)
                 model.save_training_state(logger)
             test_model(hp, model, test_loader, writer)
-        logger.info("End of Train")
+        cleanup()
+        if logger is not None:
+            logger.info("End of Train")
     except Exception as e:
-        logger.info("Exiting due to exception: %s" % e)
+        if logger is not None:
+            logger.info("Exiting due to exception: %s" % e)
         traceback.print_exc()
+        cleanup()
 
 
 def main():
@@ -84,7 +121,10 @@ def main():
         logger.error("train or test data directory cannot be empty.")
         raise Exception("Please specify directories of data in %s" % args.config)
 
-    train_loop(hp, logger, writer)
+    if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 1:
+        train_loop(0, hp, logger, writer)
+    else:
+        distributed_run(train_loop, hp, logger, writer, hp.train.dist.world_size)
 
 
 if __name__ == "__main__":

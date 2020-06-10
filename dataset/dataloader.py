@@ -18,14 +18,14 @@ class DataLoader_(DataLoader):
         return BackgroundGenerator(super().__iter__())
 
 
-def create_dataloader(hp, mode):
+def create_dataloader(hp, mode, rank, world_size):
     if hp.data.use_background_generator:
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
     if mode is DataloaderMode.train:
         return data_loader(
-            dataset=Dataset_(hp, mode),
+            dataset=Dataset_(hp, mode, rank, world_size),
             batch_size=hp.train.batch_size,
             shuffle=True,
             num_workers=hp.train.num_workers,
@@ -34,7 +34,7 @@ def create_dataloader(hp, mode):
         )
     elif mode is DataloaderMode.test:
         return data_loader(
-            dataset=Dataset_(hp, mode),
+            dataset=Dataset_(hp, mode, rank, world_size),
             batch_size=hp.test.batch_size,
             shuffle=False,
             num_workers=hp.test.num_workers,
@@ -46,7 +46,7 @@ def create_dataloader(hp, mode):
 
 
 class Dataset_(Dataset):
-    def __init__(self, hp, mode):
+    def __init__(self, hp, mode, rank, world_size):
         self.hp = hp
         self.mode = mode
         if mode is DataloaderMode.train:
@@ -65,13 +65,22 @@ class Dataset_(Dataset):
         for dataset_file in self.dataset_files:
             # TODO: This is example code. You should change this part as you need
             pass
+        # TODO: This is example code. You should change this part as you need
+        self.dataset = [torch.rand(10) for _ in range(64)]
+
+        if world_size != 1:
+            if len(self.dataset) % world_size != 0:
+                raise ValueError("world_size should be factor of dataset size")
+            self.dataset = self.dataset[
+                rank
+                * len(self.dataset)
+                // world_size : (rank + 1)
+                * len(self.dataset)
+                // world_size
+            ]
 
     def __len__(self):
-        # TODO: This is example code. You should change this part as you need
-        # return len(self.dataset)
-        return 10
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        # TODO: This is example code. You should change this part as you need
-        # return self.dataset[idx]
-        return torch.rand(10)
+        return self.dataset[idx]
