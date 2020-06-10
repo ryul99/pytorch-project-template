@@ -1,6 +1,3 @@
-import os
-import time
-import logging
 import argparse
 import yaml
 import itertools
@@ -14,6 +11,7 @@ from utils.train_model import train_model
 from utils.test_model import test_model
 from utils.utils import load_hparam, set_random_seed
 from utils.writer import Writer
+from utils.logger import make_logger
 from dataset.dataloader import create_dataloader, DataloaderMode
 
 
@@ -72,24 +70,8 @@ def main():
         hp.train.random_seed = random.randint(1, 10000)
     set_random_seed(hp.train.random_seed)
 
-    # set log/checkpoint dir
-    hp.log.chkpt_dir = os.path.join(hp.log.chkpt_dir, hp.log.name)
-    hp.log.log_dir = os.path.join(hp.log.log_dir, hp.log.name)
-    os.makedirs(hp.log.chkpt_dir, exist_ok=True)
-    os.makedirs(hp.log.log_dir, exist_ok=True)
-
     # set logger
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(
-                os.path.join(hp.log.log_dir, "%s-%d.log" % (hp.log.name, time.time()))
-            ),
-            logging.StreamHandler(),
-        ],
-    )
-    logger = logging.getLogger()
+    logger = make_logger(hp)
 
     # set writer (tensorboard / wandb)
     writer = Writer(hp, hp.log.log_dir)
