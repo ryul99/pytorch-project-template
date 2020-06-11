@@ -12,22 +12,22 @@ from utils.utils import DotDict
 class Model:
     def __init__(self, hp, net_arch, loss_f, rank=0, world_size=1):
         self.hp = hp
-        self.device = hp.model.device
+        self.device = self.hp.model.device
         self.net = net_arch.to(self.device)
-        if self.device != "cpu" and world_size != 0:
-            self.net = DDP(self.net, device_ids=[rank])
         self.rank = rank
         self.world_size = world_size
+        if self.device != "cpu" and self.world_size != 0:
+            self.net = DDP(self.net, device_ids=[self.rank])
         self.input = None
         self.GT = None
         self.step = 0
         self.epoch = -1
 
         # init optimizer
-        optimizer_mode = hp.train.optimizer.mode
+        optimizer_mode = self.hp.train.optimizer.mode
         if optimizer_mode == "adam":
             self.optimizer = torch.optim.Adam(
-                self.net.parameters(), **(hp.train.optimizer[optimizer_mode])
+                self.net.parameters(), **(self.hp.train.optimizer[optimizer_mode])
             )
         else:
             raise Exception("%s optimizer not supported" % optimizer_mode)
