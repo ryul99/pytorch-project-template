@@ -3,6 +3,7 @@ data:
   test_dir: 'dataset/meta/test'
   file_format: '*.file_extension'
   use_background_generator: true
+  divide_dataset_per_gpu: true
 ---
 train:
   random_seed: ~
