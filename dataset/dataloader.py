@@ -60,9 +60,9 @@ class Dataset_(Dataset):
         self.hp = DotDict(hp)
         self.mode = mode
         if mode is DataloaderMode.train:
-            self.data_dir = hp.data.train_dir
+            self.data_dir = self.hp.data.train_dir
         elif mode is DataloaderMode.test:
-            self.data_dir = hp.data.test_dir
+            self.data_dir = self.hp.data.test_dir
         else:
             raise ValueError(f"invalid dataloader mode {mode}")
         self.dataset_files = sorted(
