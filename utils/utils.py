@@ -44,6 +44,12 @@ class DotDict(dict):
                 else:
                     self[k] = v
 
+    def __copy__(self):
+        copy = type(self)()
+        for k, v in self.items():
+            copy[k] = v
+        return copy
+
     def __deepcopy__(self, memodict={}):
         copy = type(self)()
         memodict[id(self)] = copy
