@@ -3,6 +3,7 @@ import yaml
 import random
 import numpy as np
 import torch
+from copy import deepcopy
 
 
 def set_random_seed(seed):
@@ -42,6 +43,13 @@ class DotDict(dict):
                     self[k] = DotDict(v)
                 else:
                     self[k] = v
+
+    def __deepcopy__(self, memodict={}):
+        copy = type(self)()
+        memodict[id(self)] = copy
+        for k, v in self.items():
+            copy[k] = deepcopy(v, memodict)
+        return copy
 
     def to_dict(self):
         output_dict = dict()
