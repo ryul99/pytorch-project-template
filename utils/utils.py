@@ -57,6 +57,12 @@ class DotDict(dict):
             copy[k] = deepcopy(v, memodict)
         return copy
 
+    def __getstate__(self):
+        return self.to_dict()
+
+    def __setstate__(self, state):
+        self.__init__(state)
+
     def to_dict(self):
         output_dict = dict()
         for k, v in self.items():
