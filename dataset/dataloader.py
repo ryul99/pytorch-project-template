@@ -25,16 +25,16 @@ def create_dataloader(hp, mode, rank, world_size):
     else:
         data_loader = DataLoader
     dataset = Dataset_(hp, mode, rank, world_size)
-    sampler = (
-        DistributedSampler(dataset, world_size, rank)
-        if world_size > 0 and hp.data.divide_dataset_per_gpu
-        else None
-    )
+    train_use_shuffle = True
+    sampler = None
+    if world_size > 0 and hp.data.divide_dataset_per_gpu:
+        sampler = DistributedSampler(dataset, world_size, rank)
+        train_use_shuffle = False
     if mode is DataloaderMode.train:
         return data_loader(
             dataset=dataset,
             batch_size=hp.train.batch_size,
-            shuffle=True,
+            shuffle=train_use_shuffle,
             sampler=sampler,
             num_workers=hp.train.num_workers,
             pin_memory=True,
