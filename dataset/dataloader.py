@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
 import torch
 import glob
 import os
@@ -23,20 +24,28 @@ def create_dataloader(hp, mode, rank, world_size):
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
+    dataset = Dataset_(hp, mode, rank, world_size)
+    sampler = (
+        DistributedSampler(dataset, world_size, rank)
+        if world_size > 0 and hp.data.divide_dataset_per_gpu
+        else None
+    )
     if mode is DataloaderMode.train:
         return data_loader(
-            dataset=Dataset_(hp, mode, rank, world_size),
+            dataset=dataset,
             batch_size=hp.train.batch_size,
             shuffle=True,
+            sampler=sampler,
             num_workers=hp.train.num_workers,
             pin_memory=True,
             drop_last=True,
         )
     elif mode is DataloaderMode.test:
         return data_loader(
-            dataset=Dataset_(hp, mode, rank, world_size),
+            dataset=dataset,
             batch_size=hp.test.batch_size,
             shuffle=False,
+            sampler=sampler,
             num_workers=hp.test.num_workers,
             pin_memory=True,
             drop_last=True,
@@ -67,19 +76,6 @@ class Dataset_(Dataset):
             pass
         # TODO: This is example code. You should change this part as you need
         self.dataset = [(torch.rand(10), torch.rand(1)) for _ in range(64)]
-
-        if self.hp.data.divide_dataset_per_gpu:
-            self.dataset.sort()
-            if world_size != 0:
-                if len(self.dataset) % world_size != 0:
-                    raise ValueError("world_size should be factor of dataset size")
-                self.dataset = self.dataset[
-                    rank
-                    * len(self.dataset)
-                    // world_size : (rank + 1)
-                    * len(self.dataset)
-                    // world_size
-                ]
 
     def __len__(self):
         return len(self.dataset)
