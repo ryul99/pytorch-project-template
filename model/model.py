@@ -14,7 +14,7 @@ class Model:
         self.hp = hp
         self.device = hp.model.device
         self.net = net_arch.to(self.device)
-        if self.device != "cpu" and world_size != 1:
+        if self.device != "cpu" and world_size != 0:
             self.net = DDP(self.net, device_ids=[rank])
         self.rank = rank
         self.world_size = world_size

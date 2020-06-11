@@ -37,7 +37,7 @@ def distributed_run(fn, hp, world_size):
 def train_loop(rank, hp, world_size=1):
     # reload hp
     hp = DotDict(hp)
-    if world_size != 1:
+    if world_size != 0:
         setup(hp, rank, world_size)
     if rank != 0:
         logger = None
@@ -55,7 +55,7 @@ def train_loop(rank, hp, world_size=1):
             raise Exception("Please specify directories of data")
         logger.info("Set up train process")
 
-    if hp.model.device.lower() == "cuda" and world_size != 1:
+    if hp.model.device.lower() == "cuda" and world_size != 0:
         hp.model.device = rank
     else:
         hp.model.device = hp.model.device.lower()
@@ -122,7 +122,9 @@ def main():
         hp.train.random_seed = random.randint(1, 10000)
     set_random_seed(hp.train.random_seed)
 
-    if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 1:
+    if hp.train.dist.gpus < 0:
+        hp.train.dist.gpus = torch.cuda.device_count()
+    if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 0:
         train_loop(0, hp)
     else:
         distributed_run(train_loop, hp.to_dict(), hp.train.dist.gpus)

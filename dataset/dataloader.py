@@ -68,7 +68,7 @@ class Dataset_(Dataset):
         # TODO: This is example code. You should change this part as you need
         self.dataset = [(torch.rand(10), torch.rand(1)) for _ in range(64)]
 
-        if world_size != 1:
+        if world_size != 0:
             if len(self.dataset) % world_size != 0:
                 raise ValueError("world_size should be factor of dataset size")
             self.dataset = self.dataset[
