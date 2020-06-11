@@ -3,11 +3,12 @@ data:
   test_dir: 'dataset/meta/test'
   file_format: '*.file_extension'
   use_background_generator: true
+  divide_dataset_per_gpu: true
 ---
 train:
   random_seed: ~
   num_iter: 10000  # max iteration
-  num_workers: 16
+  num_workers: 4
   batch_size: 64
   optimizer:
     mode: 'adam'
@@ -16,6 +17,11 @@ train:
       betas:
         - 0.9
         - 0.999
+  dist:
+    master_addr: 'localhost'
+    master_port: '12355'
+    mode: 'nccl'
+    gpus: 8 # 0 for not using dist, -1 for using all gpus
 ---
 test:
   num_workers: 16

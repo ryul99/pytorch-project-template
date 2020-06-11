@@ -1,6 +1,7 @@
 import torch
 import torch.nn
-from torch.nn.parallel import DataParallel, DistributedDataParallel
+from torch.nn.parallel import DistributedDataParallel as DDP
+
 from collections import OrderedDict
 import os.path as osp
 import wandb
@@ -9,20 +10,24 @@ from utils.utils import DotDict
 
 
 class Model:
-    def __init__(self, hp, net_arch, loss_f):
+    def __init__(self, hp, net_arch, loss_f, rank=0, world_size=1):
         self.hp = hp
-        self.device = hp.model.device
+        self.device = self.hp.model.device
         self.net = net_arch.to(self.device)
+        self.rank = rank
+        self.world_size = world_size
+        if self.device != "cpu" and self.world_size != 0:
+            self.net = DDP(self.net, device_ids=[self.rank])
         self.input = None
         self.GT = None
         self.step = 0
         self.epoch = -1
 
         # init optimizer
-        optimizer_mode = hp.train.optimizer.mode
+        optimizer_mode = self.hp.train.optimizer.mode
         if optimizer_mode == "adam":
             self.optimizer = torch.optim.Adam(
-                self.net.parameters(), **(hp.train.optimizer[optimizer_mode])
+                self.net.parameters(), **(self.hp.train.optimizer[optimizer_mode])
             )
         else:
             raise Exception("%s optimizer not supported" % optimizer_mode)
@@ -58,15 +63,17 @@ class Model:
         return output
 
     def save_network(self, logger):
-        save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
-        save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
-        state_dict = self.net.state_dict()
-        for key, param in state_dict.items():
-            state_dict[key] = param.cpu()
-        torch.save(state_dict, save_path)
-        if self.hp.log.use_wandb:
-            wandb.save(save_path)
-        logger.info("Saved network checkpoint to: %s" % save_path)
+        if self.rank == 0:
+            save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
+            save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+            state_dict = self.net.state_dict()
+            for key, param in state_dict.items():
+                state_dict[key] = param.cpu()
+            torch.save(state_dict, save_path)
+            if self.hp.log.use_wandb:
+                wandb.save(save_path)
+            if logger is not None:
+                logger.info("Saved network checkpoint to: %s" % save_path)
 
     def load_network(self, loaded_clean_net=None, logger=None):
         if loaded_clean_net is None:
@@ -99,7 +106,8 @@ class Model:
         torch.save(state, save_path)
         if self.hp.log.use_wandb:
             wandb.save(save_path)
-        logger.info("Saved training state to: %s" % save_path)
+        if logger is not None:
+            logger.info("Saved training state to: %s" % save_path)
 
     def load_training_state(self, logger):
         if self.hp.log.use_wandb and self.hp.load.wandb_load_path is not None:
@@ -112,4 +120,7 @@ class Model:
         self.optimizer.load_state_dict(resume_state["optimizer"])
         self.step = resume_state["step"]
         self.epoch = resume_state["epoch"]
-        logger.info("Resuming from training state: %s" % self.hp.load.resume_state_path)
+        if logger is not None:
+            logger.info(
+                "Resuming from training state: %s" % self.hp.load.resume_state_path
+            )

@@ -1,4 +1,3 @@
-tqdm
 numpy
 pyyaml
 sklearn

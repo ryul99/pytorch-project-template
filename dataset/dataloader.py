@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
 import torch
 import glob
 import os
@@ -18,25 +19,33 @@ class DataLoader_(DataLoader):
         return BackgroundGenerator(super().__iter__())
 
 
-def create_dataloader(hp, mode):
+def create_dataloader(hp, mode, rank, world_size):
     if hp.data.use_background_generator:
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
+    dataset = Dataset_(hp, mode, rank, world_size)
+    train_use_shuffle = True
+    sampler = None
+    if world_size > 0 and hp.data.divide_dataset_per_gpu:
+        sampler = DistributedSampler(dataset, world_size, rank)
+        train_use_shuffle = False
     if mode is DataloaderMode.train:
         return data_loader(
-            dataset=Dataset_(hp, mode),
+            dataset=dataset,
             batch_size=hp.train.batch_size,
-            shuffle=True,
+            shuffle=train_use_shuffle,
+            sampler=sampler,
             num_workers=hp.train.num_workers,
             pin_memory=True,
             drop_last=True,
         )
     elif mode is DataloaderMode.test:
         return data_loader(
-            dataset=Dataset_(hp, mode),
+            dataset=dataset,
             batch_size=hp.test.batch_size,
             shuffle=False,
+            sampler=sampler,
             num_workers=hp.test.num_workers,
             pin_memory=True,
             drop_last=True,
@@ -46,13 +55,13 @@ def create_dataloader(hp, mode):
 
 
 class Dataset_(Dataset):
-    def __init__(self, hp, mode):
+    def __init__(self, hp, mode, rank, world_size):
         self.hp = hp
         self.mode = mode
         if mode is DataloaderMode.train:
-            self.data_dir = hp.data.train_dir
+            self.data_dir = self.hp.data.train_dir
         elif mode is DataloaderMode.test:
-            self.data_dir = hp.data.test_dir
+            self.data_dir = self.hp.data.test_dir
         else:
             raise ValueError(f"invalid dataloader mode {mode}")
         self.dataset_files = sorted(
@@ -65,13 +74,11 @@ class Dataset_(Dataset):
         for dataset_file in self.dataset_files:
             # TODO: This is example code. You should change this part as you need
             pass
+        # TODO: This is example code. You should change this part as you need
+        self.dataset = [(torch.rand(10), torch.rand(1)) for _ in range(64)]
 
     def __len__(self):
-        # TODO: This is example code. You should change this part as you need
-        # return len(self.dataset)
-        return 10
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        # TODO: This is example code. You should change this part as you need
-        # return self.dataset[idx]
-        return torch.rand(10)
+        return self.dataset[idx]
