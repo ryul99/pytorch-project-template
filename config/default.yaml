@@ -8,7 +8,7 @@ data:
 train:
   random_seed: ~
   num_iter: 10000  # max iteration
-  num_workers: 16
+  num_workers: 4
   batch_size: 64
   optimizer:
     mode: 'adam'
