@@ -5,7 +5,6 @@ import glob
 import os
 from enum import Enum, auto
 from prefetch_generator import BackgroundGenerator
-from utils.utils import DotDict
 
 
 class DataloaderMode(Enum):
@@ -25,7 +24,7 @@ def create_dataloader(hp, mode, rank, world_size):
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
-    dataset = Dataset_(hp.to_dict(), mode, rank, world_size)
+    dataset = Dataset_(hp, mode, rank, world_size)
     sampler = (
         DistributedSampler(dataset, world_size, rank)
         if world_size > 0 and hp.data.divide_dataset_per_gpu
@@ -57,7 +56,7 @@ def create_dataloader(hp, mode, rank, world_size):
 
 class Dataset_(Dataset):
     def __init__(self, hp, mode, rank, world_size):
-        self.hp = DotDict(hp)
+        self.hp = hp
         self.mode = mode
         if mode is DataloaderMode.train:
             self.data_dir = self.hp.data.train_dir
