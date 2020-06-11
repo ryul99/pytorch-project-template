@@ -37,7 +37,7 @@ def distributed_run(fn, hp, world_size):
 def train_loop(rank, hp, world_size=1):
     # reload hp
     hp = DotDict(hp)
-    if world_size != 0:
+    if hp.model.device.lower() == "cuda" and world_size != 0:
         setup(hp, rank, world_size)
     if rank != 0:
         logger = None
@@ -57,6 +57,7 @@ def train_loop(rank, hp, world_size=1):
 
     if hp.model.device.lower() == "cuda" and world_size != 0:
         hp.model.device = rank
+        torch.cuda.set_device(rank)
     else:
         hp.model.device = hp.model.device.lower()
 
