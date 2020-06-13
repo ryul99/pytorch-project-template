@@ -95,19 +95,20 @@ class Model:
             logger.info("Checkpoint %s is loaded" % self.hp.load.network_chkpt_path)
 
     def save_training_state(self, logger):
-        save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
-        save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
-        state = {
-            "model": self.net.state_dict(),
-            "optimizer": self.optimizer.state_dict(),
-            "step": self.step,
-            "epoch": self.epoch,
-        }
-        torch.save(state, save_path)
-        if self.hp.log.use_wandb:
-            wandb.save(save_path)
-        if logger is not None:
-            logger.info("Saved training state to: %s" % save_path)
+        if self.rank == 0:
+            save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
+            save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+            state = {
+                "model": self.net.state_dict(),
+                "optimizer": self.optimizer.state_dict(),
+                "step": self.step,
+                "epoch": self.epoch,
+            }
+            torch.save(state, save_path)
+            if self.hp.log.use_wandb:
+                wandb.save(save_path)
+            if logger is not None:
+                logger.info("Saved training state to: %s" % save_path)
 
     def load_training_state(self, logger):
         if self.hp.log.use_wandb and self.hp.load.wandb_load_path is not None:
