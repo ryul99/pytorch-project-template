@@ -76,7 +76,9 @@ class Model:
                 logger.info("Saved network checkpoint to: %s" % save_path)
 
     def load_network(self, loaded_net=None, logger=None):
+        add_log = False
         if loaded_net is None:
+            add_log = True
             if self.hp.load.wandb_load_path is not None:
                 self.hp.load.network_chkpt_path = wandb.restore(
                     self.hp.load.network_chkpt_path,
@@ -91,7 +93,7 @@ class Model:
                 loaded_clean_net[k] = v
 
         self.net.load_state_dict(loaded_clean_net, strict=self.hp.load.strict_load)
-        if logger is not None:
+        if logger is not None and add_log:
             logger.info("Checkpoint %s is loaded" % self.hp.load.network_chkpt_path)
 
     def save_training_state(self, logger):
