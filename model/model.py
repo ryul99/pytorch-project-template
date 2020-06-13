@@ -101,7 +101,8 @@ class Model:
         if self.rank == 0:
             save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
             save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
-            net_state_dict = self.net.state_dict()
+            net = self.net.module if isinstance(self.net, DDP) else self.net
+            net_state_dict = net.state_dict()
             for key, param in net_state_dict.items():
                 net_state_dict[key] = param.cpu()
             state = {
