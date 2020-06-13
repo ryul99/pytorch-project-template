@@ -85,7 +85,9 @@ class Model:
                     self.hp.load.network_chkpt_path,
                     run_path=self.hp.load.wandb_load_path,
                 ).name
-            loaded_net = torch.load(self.hp.load.network_chkpt_path)
+            loaded_net = torch.load(
+                self.hp.load.network_chkpt_path, map_location=torch.device(self.device)
+            )
         loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
         for k, v in loaded_net.items():
             if k.startswith("module."):
@@ -122,7 +124,9 @@ class Model:
             self.hp.load.resume_state_path = wandb.restore(
                 self.hp.load.resume_state_path, run_path=self.hp.load.wandb_load_path
             ).name
-        resume_state = torch.load(self.hp.load.resume_state_path)
+        resume_state = torch.load(
+            self.hp.load.resume_state_path, map_location=torch.device(self.device)
+        )
 
         self.load_network(loaded_net=resume_state["model"], logger=logger)
         self.optimizer.load_state_dict(resume_state["optimizer"])
