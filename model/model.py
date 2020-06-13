@@ -69,7 +69,7 @@ class Model:
             net = self.net.module if isinstance(self.net, DDP) else self.net
             state_dict = net.state_dict()
             for key, param in state_dict.items():
-                state_dict[key] = param.cpu()
+                state_dict[key] = param.to("cpu")
             torch.save(state_dict, save_path)
             if self.hp.log.use_wandb:
                 wandb.save(save_path)
@@ -106,7 +106,7 @@ class Model:
             net = self.net.module if isinstance(self.net, DDP) else self.net
             net_state_dict = net.state_dict()
             for key, param in net_state_dict.items():
-                net_state_dict[key] = param.cpu()
+                net_state_dict[key] = param.to("cpu")
             state = {
                 "model": net_state_dict,
                 "optimizer": self.optimizer.state_dict(),
