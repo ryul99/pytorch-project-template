@@ -74,9 +74,17 @@ def train_loop(rank, hp, world_size=1):
     loss_f = torch.nn.MSELoss()
     model = Model(hp, net_arch, loss_f, rank, world_size)
 
-    # load training state
+    # load training state / network checkpoint
     if hp.load.resume_state_path is not None:
         model.load_training_state(logger)
+        if logger is not None:
+            logger.info("Training state (%s) is loaded" % hp.load.resume_state_path)
+    elif hp.load.network_chkpt_path is not None:
+        model.load_network(logger=logger)
+        if logger is not None:
+            logger.info(
+                "Network Checkpoint (%s) is loaded" % hp.load.network_chkpt_path
+            )
     else:
         if logger is not None:
             logger.info("Starting new training run.")

@@ -77,7 +77,7 @@ class Model:
 
     def load_network(self, loaded_clean_net=None, logger=None):
         if loaded_clean_net is None:
-            if self.hp.log.use_wandb and self.hp.load.wandb_load_path is not None:
+            if self.hp.load.wandb_load_path is not None:
                 self.hp.load.network_chkpt_path = wandb.restore(
                     self.hp.load.network_chkpt_path,
                     run_path=self.hp.load.wandb_load_path,
@@ -111,7 +111,7 @@ class Model:
                 logger.info("Saved training state to: %s" % save_path)
 
     def load_training_state(self, logger):
-        if self.hp.log.use_wandb and self.hp.load.wandb_load_path is not None:
+        if self.hp.load.wandb_load_path is not None:
             self.hp.load.resume_state_path = wandb.restore(
                 self.hp.load.resume_state_path, run_path=self.hp.load.wandb_load_path
             ).name
