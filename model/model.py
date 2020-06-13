@@ -75,20 +75,20 @@ class Model:
             if logger is not None:
                 logger.info("Saved network checkpoint to: %s" % save_path)
 
-    def load_network(self, loaded_clean_net=None, logger=None):
-        if loaded_clean_net is None:
+    def load_network(self, loaded_net=None, logger=None):
+        if loaded_net is None:
             if self.hp.load.wandb_load_path is not None:
                 self.hp.load.network_chkpt_path = wandb.restore(
                     self.hp.load.network_chkpt_path,
                     run_path=self.hp.load.wandb_load_path,
                 ).name
             loaded_net = torch.load(self.hp.load.network_chkpt_path)
-            loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
-            for k, v in loaded_net.items():
-                if k.startswith("module."):
-                    loaded_clean_net[k[7:]] = v
-                else:
-                    loaded_clean_net[k] = v
+        loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
+        for k, v in loaded_net.items():
+            if k.startswith("module."):
+                loaded_clean_net[k[7:]] = v
+            else:
+                loaded_clean_net[k] = v
 
         self.net.load_state_dict(loaded_clean_net, strict=self.hp.load.strict_load)
         if logger is not None:
@@ -117,7 +117,7 @@ class Model:
             ).name
         resume_state = torch.load(self.hp.load.resume_state_path)
 
-        self.load_network(loaded_clean_net=resume_state["model"], logger=logger)
+        self.load_network(loaded_net=resume_state["model"], logger=logger)
         self.optimizer.load_state_dict(resume_state["optimizer"])
         self.step = resume_state["step"]
         self.epoch = resume_state["epoch"]
