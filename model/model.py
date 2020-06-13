@@ -66,40 +66,49 @@ class Model:
         if self.rank == 0:
             save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
             save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
-            state_dict = self.net.state_dict()
+            net = self.net.module if isinstance(self.net, DDP) else self.net
+            state_dict = net.state_dict()
             for key, param in state_dict.items():
-                state_dict[key] = param.cpu()
+                state_dict[key] = param.to("cpu")
             torch.save(state_dict, save_path)
             if self.hp.log.use_wandb:
                 wandb.save(save_path)
             if logger is not None:
                 logger.info("Saved network checkpoint to: %s" % save_path)
 
-    def load_network(self, loaded_clean_net=None, logger=None):
-        if loaded_clean_net is None:
-            if self.hp.log.use_wandb and self.hp.load.wandb_load_path is not None:
+    def load_network(self, loaded_net=None, logger=None):
+        add_log = False
+        if loaded_net is None:
+            add_log = True
+            if self.hp.load.wandb_load_path is not None:
                 self.hp.load.network_chkpt_path = wandb.restore(
                     self.hp.load.network_chkpt_path,
                     run_path=self.hp.load.wandb_load_path,
                 ).name
-            loaded_net = torch.load(self.hp.load.network_chkpt_path)
-            loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
-            for k, v in loaded_net.items():
-                if k.startswith("module."):
-                    loaded_clean_net[k[7:]] = v
-                else:
-                    loaded_clean_net[k] = v
+            loaded_net = torch.load(
+                self.hp.load.network_chkpt_path, map_location=torch.device(self.device)
+            )
+        loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
+        for k, v in loaded_net.items():
+            if k.startswith("module."):
+                loaded_clean_net[k[7:]] = v
+            else:
+                loaded_clean_net[k] = v
 
         self.net.load_state_dict(loaded_clean_net, strict=self.hp.load.strict_load)
-        if logger is not None:
+        if logger is not None and add_log:
             logger.info("Checkpoint %s is loaded" % self.hp.load.network_chkpt_path)
 
     def save_training_state(self, logger):
         if self.rank == 0:
             save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
             save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+            net = self.net.module if isinstance(self.net, DDP) else self.net
+            net_state_dict = net.state_dict()
+            for key, param in net_state_dict.items():
+                net_state_dict[key] = param.to("cpu")
             state = {
-                "model": self.net.state_dict(),
+                "model": net_state_dict,
                 "optimizer": self.optimizer.state_dict(),
                 "step": self.step,
                 "epoch": self.epoch,
@@ -111,13 +120,15 @@ class Model:
                 logger.info("Saved training state to: %s" % save_path)
 
     def load_training_state(self, logger):
-        if self.hp.log.use_wandb and self.hp.load.wandb_load_path is not None:
+        if self.hp.load.wandb_load_path is not None:
             self.hp.load.resume_state_path = wandb.restore(
                 self.hp.load.resume_state_path, run_path=self.hp.load.wandb_load_path
             ).name
-        resume_state = torch.load(self.hp.load.resume_state_path)
+        resume_state = torch.load(
+            self.hp.load.resume_state_path, map_location=torch.device(self.device)
+        )
 
-        self.load_network(loaded_clean_net=resume_state["model"], logger=logger)
+        self.load_network(loaded_net=resume_state["model"], logger=logger)
         self.optimizer.load_state_dict(resume_state["optimizer"])
         self.step = resume_state["step"]
         self.epoch = resume_state["epoch"]
