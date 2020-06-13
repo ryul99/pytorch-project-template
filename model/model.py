@@ -100,8 +100,11 @@ class Model:
         if self.rank == 0:
             save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
             save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+            net_state_dict = self.net.state_dict()
+            for key, param in net_state_dict.items():
+                net_state_dict[key] = param.cpu()
             state = {
-                "model": self.net.state_dict(),
+                "model": net_state_dict,
                 "optimizer": self.optimizer.state_dict(),
                 "step": self.step,
                 "epoch": self.epoch,
