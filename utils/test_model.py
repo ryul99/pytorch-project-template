@@ -13,5 +13,5 @@ def test_model(hp, model, test_loader, writer):
 
         total_test_loss /= len(test_loader.dataset) / hp.test.batch_size
 
-        if writer is not None and model.step:
+        if writer is not None:
             writer.test_logging(total_test_loss, model.step)
