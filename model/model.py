@@ -66,7 +66,8 @@ class Model:
         if self.rank == 0:
             save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
             save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
-            state_dict = self.net.state_dict()
+            net = self.net.module if isinstance(self.net, DDP) else self.net
+            state_dict = net.state_dict()
             for key, param in state_dict.items():
                 state_dict[key] = param.to("cpu")
             torch.save(state_dict, save_path)
