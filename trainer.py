@@ -34,7 +34,7 @@ def distributed_run(fn, hp, world_size):
     mp.spawn(fn, args=(hp, world_size,), nprocs=world_size, join=True)
 
 
-def train_loop(rank, hp, world_size=1):
+def train_loop(rank, hp, world_size=0):
     # reload hp
     hp = DotDict(hp)
     if hp.model.device.lower() == "cuda" and world_size != 0:
