@@ -37,8 +37,15 @@ def distributed_run(fn, hp, world_size):
 def train_loop(rank, hp, world_size=0):
     # reload hp
     hp = DotDict(hp)
+
     if hp.model.device.lower() == "cuda" and world_size != 0:
+        hp.model.device = rank
         setup(hp, rank, world_size)
+        torch.cuda.set_device(hp.model.device)
+    else:
+        hp.model.device = hp.model.device.lower()
+
+    # setup logger / writer
     if rank != 0:
         logger = None
         writer = None
@@ -54,12 +61,6 @@ def train_loop(rank, hp, world_size=0):
             logger.error("train or test data directory cannot be empty.")
             raise Exception("Please specify directories of data")
         logger.info("Set up train process")
-
-    if hp.model.device.lower() == "cuda" and world_size != 0:
-        hp.model.device = rank
-        torch.cuda.set_device(rank)
-    else:
-        hp.model.device = hp.model.device.lower()
 
     # make dataloader
     if logger is not None:
@@ -93,14 +94,15 @@ def train_loop(rank, hp, world_size=0):
                 model.save_network(logger)
                 model.save_training_state(logger)
             test_model(hp, model, test_loader, writer)
-        cleanup()
         if logger is not None:
             logger.info("End of Train")
     except Exception as e:
         if logger is not None:
             logger.info("Exiting due to exception: %s" % e)
         traceback.print_exc()
-        cleanup()
+    finally:
+        if world_size != 0:
+            cleanup()
 
 
 def main():
