@@ -44,6 +44,6 @@ log:
 ---
 load:
   wandb_load_path: ~
-  network_chkpt_path: ./test.pt
+  network_chkpt_path: ~
   strict_load: false
   resume_state_path: ~
