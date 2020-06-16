@@ -38,12 +38,10 @@ def train_loop(rank, hp, world_size=0):
     # reload hp
     hp = DotDict(hp)
 
-    if hp.model.device.lower() == "cuda" and world_size != 0:
+    if hp.model.device == "cuda" and world_size != 0:
         hp.model.device = rank
         setup(hp, rank, world_size)
         torch.cuda.set_device(hp.model.device)
-    else:
-        hp.model.device = hp.model.device.lower()
 
     # setup logger / writer
     if rank != 0:
@@ -119,6 +117,7 @@ def main():
     )
     args = parser.parse_args()
     hp = load_hparam(args.config)
+    hp.model.device = hp.model.device.lower()
 
     if args.name is not None:
         hp.log.name = args.name
@@ -130,7 +129,7 @@ def main():
 
     if hp.train.dist.gpus < 0:
         hp.train.dist.gpus = torch.cuda.device_count()
-    if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 0:
+    if hp.model.device == "cpu" or hp.train.dist.gpus == 0:
         train_loop(0, hp)
     else:
         distributed_run(train_loop, hp.to_dict(), hp.train.dist.gpus)
