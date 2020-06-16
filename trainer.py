@@ -35,9 +35,6 @@ def distributed_run(fn, hp, world_size):
 
 
 def train_loop(rank, hp, world_size=0):
-    # reload hp
-    hp = DotDict(hp)
-
     if hp.model.device == "cuda" and world_size != 0:
         hp.model.device = rank
         setup(hp, rank, world_size)
@@ -132,7 +129,7 @@ def main():
     if hp.model.device == "cpu" or hp.train.dist.gpus == 0:
         train_loop(0, hp)
     else:
-        distributed_run(train_loop, hp.to_dict(), hp.train.dist.gpus)
+        distributed_run(train_loop, hp, hp.train.dist.gpus)
 
 
 if __name__ == "__main__":
