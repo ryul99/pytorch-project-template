@@ -82,7 +82,7 @@ def train_loop(rank, hp, world_size=0):
     try:
         epoch_step = 1 if hp.data.divide_dataset_per_gpu else world_size
         for model.epoch in itertools.count(model.epoch + 1, epoch_step):
-            if model.epoch > hp.train.num_iter:
+            if model.epoch > hp.train.num_epoch:
                 break
             train_model(hp, model, train_loader, writer, logger)
             if model.epoch % hp.log.chkpt_interval == 0:

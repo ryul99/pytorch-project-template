@@ -46,7 +46,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 - `train`/`test` field
     - Configs for training options.
     - `random_seed` is for setting python, numpy, pytorch random seed.
-    - `num_iter` is for end iteration step of training.
+    - `num_epoch` is for end iteration step of training.
     - `optimizer` is for selecting optimizer. Only `adam optimizer` is supported for now.
     - `dist` is for configuring Distributed Data Parallel. Not using DDP when `gpus` is 0, using all gpus when `gpus` is -1
 - `model` field
