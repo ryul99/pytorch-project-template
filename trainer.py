@@ -88,7 +88,7 @@ def train_loop(rank, hp, world_size=0):
             if model.epoch % hp.log.chkpt_interval == 0:
                 model.save_network(logger)
                 model.save_training_state(logger)
-            test_model(hp, model, test_loader, writer)
+            test_model(hp, model, test_loader, writer, logger)
         if logger is not None:
             logger.info("End of Train")
     except Exception as e:
