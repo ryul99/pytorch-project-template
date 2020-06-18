@@ -35,10 +35,12 @@ def distributed_run(fn, hp, world_size):
 
 
 def train_loop(rank, hp, world_size=0):
-    # reload hp
-    hp = DotDict(hp)
-    if hp.model.device.lower() == "cuda" and world_size != 0:
+    if hp.model.device == "cuda" and world_size != 0:
+        hp.model.device = rank
         setup(hp, rank, world_size)
+        torch.cuda.set_device(hp.model.device)
+
+    # setup logger / writer
     if rank != 0:
         logger = None
         writer = None
@@ -54,12 +56,6 @@ def train_loop(rank, hp, world_size=0):
             logger.error("train or test data directory cannot be empty.")
             raise Exception("Please specify directories of data")
         logger.info("Set up train process")
-
-    if hp.model.device.lower() == "cuda" and world_size != 0:
-        hp.model.device = rank
-        torch.cuda.set_device(rank)
-    else:
-        hp.model.device = hp.model.device.lower()
 
     # make dataloader
     if logger is not None:
@@ -86,21 +82,22 @@ def train_loop(rank, hp, world_size=0):
     try:
         epoch_step = 1 if hp.data.divide_dataset_per_gpu else world_size
         for model.epoch in itertools.count(model.epoch + 1, epoch_step):
-            if model.epoch > hp.train.num_iter:
+            if model.epoch > hp.train.num_epoch:
                 break
             train_model(hp, model, train_loader, writer, logger)
             if model.epoch % hp.log.chkpt_interval == 0:
                 model.save_network(logger)
                 model.save_training_state(logger)
-            test_model(hp, model, test_loader, writer)
-        cleanup()
+            test_model(hp, model, test_loader, writer, logger)
         if logger is not None:
             logger.info("End of Train")
     except Exception as e:
         if logger is not None:
             logger.info("Exiting due to exception: %s" % e)
         traceback.print_exc()
-        cleanup()
+    finally:
+        if world_size != 0:
+            cleanup()
 
 
 def main():
@@ -117,6 +114,7 @@ def main():
     )
     args = parser.parse_args()
     hp = load_hparam(args.config)
+    hp.model.device = hp.model.device.lower()
 
     if args.name is not None:
         hp.log.name = args.name
@@ -128,10 +126,10 @@ def main():
 
     if hp.train.dist.gpus < 0:
         hp.train.dist.gpus = torch.cuda.device_count()
-    if hp.model.device.lower() == "cpu" or hp.train.dist.gpus == 0:
+    if hp.model.device == "cpu" or hp.train.dist.gpus == 0:
         train_loop(0, hp)
     else:
-        distributed_run(train_loop, hp.to_dict(), hp.train.dist.gpus)
+        distributed_run(train_loop, hp, hp.train.dist.gpus)
 
 
 if __name__ == "__main__":

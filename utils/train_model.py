@@ -13,10 +13,8 @@ def train_model(hp, model, train_loader, writer, logger):
             logger.error("Loss exploded to %.02f at step %d!" % (loss, model.step))
             raise Exception("Loss exploded")
 
-        if (
-            writer is not None
-            and logger is not None
-            and model.step % hp.log.summary_interval == 0
-        ):
-            writer.train_logging(loss, model.step)
-            logger.info("Train Loss %.04f at step %d" % (loss, model.step))
+        if model.step % hp.log.summary_interval == 0:
+            if writer is not None:
+                writer.train_logging(loss, model.step)
+            if logger is not None:
+                logger.info("Train Loss %.04f at step %d" % (loss, model.step))
