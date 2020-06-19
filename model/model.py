@@ -62,19 +62,21 @@ class Model:
         output = self.net(self.input)
         return output
 
-    def save_network(self, logger):
+    def save_network(self, logger, save_file=True):
         if self.rank == 0:
-            save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
-            save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
             net = self.net.module if isinstance(self.net, DDP) else self.net
             state_dict = net.state_dict()
             for key, param in state_dict.items():
                 state_dict[key] = param.to("cpu")
-            torch.save(state_dict, save_path)
-            if self.hp.log.use_wandb:
-                wandb.save(save_path)
-            if logger is not None:
-                logger.info("Saved network checkpoint to: %s" % save_path)
+            if save_file:
+                save_filename = "%s_%d.pt" % (self.hp.log.name, self.step)
+                save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
+                torch.save(state_dict, save_path)
+                if self.hp.log.use_wandb:
+                    wandb.save(save_path)
+                if logger is not None:
+                    logger.info("Saved network checkpoint to: %s" % save_path)
+            return state_dict
 
     def load_network(self, loaded_net=None, logger=None):
         add_log = False
@@ -103,10 +105,7 @@ class Model:
         if self.rank == 0:
             save_filename = "%s_%d.state" % (self.hp.log.name, self.step)
             save_path = osp.join(self.hp.log.chkpt_dir, save_filename)
-            net = self.net.module if isinstance(self.net, DDP) else self.net
-            net_state_dict = net.state_dict()
-            for key, param in net_state_dict.items():
-                net_state_dict[key] = param.to("cpu")
+            net_state_dict = self.save_network(None, False)
             state = {
                 "model": net_state_dict,
                 "optimizer": self.optimizer.state_dict(),
