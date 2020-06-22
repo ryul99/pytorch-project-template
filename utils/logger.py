@@ -1,6 +1,6 @@
 import os
 import logging
-import time
+from utils.utils import get_timestamp
 
 
 def make_logger(hp):
@@ -11,7 +11,7 @@ def make_logger(hp):
     os.makedirs(hp.log.log_dir, exist_ok=True)
 
     hp.log.log_file_path = os.path.join(
-        hp.log.log_dir, "%s-%d.log" % (hp.log.name, time.time())
+        hp.log.log_dir, "%s-%s.log" % (hp.log.name, get_timestamp())
     )
 
     # set logger

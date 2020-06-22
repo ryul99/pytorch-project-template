@@ -56,7 +56,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
     - Configs for logging include tensorboard / wandb logging.
     - `name` is train name you run. 
     - `summary_interval` and `checkpoint_interval` are interval of step and epoch between training logging and checkpoint saving.
-    - checkpoint and logs (include tensorboard) are saved under `chkpt_dir/name` and `log_dir/name`.
+    - checkpoint and logs are saved under `chkpt_dir/name` and `log_dir/name`. Tensorboard logs are saving under `log_dir/name/tensorboard`
 - `load` field
     - loading from wandb server is supported
     - `wandb_load_path` is `Run path` in overview of run. If you don't want to use wandb load, this field should be `~`.

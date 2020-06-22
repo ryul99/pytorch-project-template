@@ -4,6 +4,7 @@ import random
 import numpy as np
 import torch
 from copy import deepcopy
+from datetime import datetime
 
 
 def set_random_seed(seed):
@@ -11,6 +12,10 @@ def set_random_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+
+def get_timestamp():
+    return datetime.now().strftime("%y%m%d-%H%M%S")
 
 
 def get_commit_hash():

@@ -48,7 +48,7 @@ def train_loop(rank, hp, world_size=0):
         # set logger
         logger = make_logger(hp)
         # set writer (tensorboard / wandb)
-        writer = Writer(hp, hp.log.log_dir)
+        writer = Writer(hp, os.path.join(hp.log.log_dir, "tensorboard"))
         hp_str = yaml.dump(hp.to_dict())
         logger.info("Config:")
         logger.info(hp_str)
