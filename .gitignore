@@ -1,6 +1,7 @@
 # logs, checkpoints
 chkpt/
 logs/
+dataset/meta/*
 
 
 # configuration yaml files
