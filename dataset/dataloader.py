@@ -79,15 +79,15 @@ class Dataset_(Dataset):
             )
         else:
             raise ValueError(f"invalid dataloader mode {mode}")
-        self.dataset_files = sorted(
-            map(
-                os.path.abspath,
-                glob.glob(os.path.join(self.data_dir, self.hp.data.file_format)),
-            )
-        )
+        # self.dataset_files = sorted(
+        #     map(
+        #         os.path.abspath,
+        #         glob.glob(os.path.join(self.data_dir, self.hp.data.file_format)),
+        #     )
+        # )
         # self.dataset = list()
-        for dataset_file in self.dataset_files:
-            pass
+        # for dataset_file in self.dataset_files:
+        #     pass
 
     def __len__(self):
         return len(self.dataset)
