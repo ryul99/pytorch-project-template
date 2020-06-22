@@ -10,11 +10,15 @@ class Net_arch(nn.Module):
         self.hp = hp
 
         # TODO: This is example code. You should change this part as you need
-        self.fc1 = nn.Linear(10, 10)
-        self.fc2 = nn.Linear(10, 1)
+        self.lrelu = nn.LeakyReLU()
+        self.conv1 = nn.Sequential(nn.Conv2d(1, 4, 3, 2, 1), self.lrelu)
+        self.conv2 = nn.Sequential(nn.Conv2d(4, 4, 3, 2, 1), self.lrelu)
+        self.fc = nn.Linear(7 * 7 * 4, 10)
 
-    def forward(self, x):
+    def forward(self, x):  # x: (B,1,28,28)
         # TODO: This is example code. You should change this part as you need
-        x = self.fc1(x)
-        x = self.fc2(x)
+        x = self.conv1(x)  # x: (B,4,14,14)
+        x = self.conv2(x)  # x: (B,4,7,7)
+        x = torch.flatten(x, 1)  # x: (B,4*7*7)
+        x = self.fc(x)  # x: (B,10)
         return x

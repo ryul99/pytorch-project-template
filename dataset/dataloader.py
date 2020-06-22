@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 import torch
+import torchvision
 import glob
 import os
 from enum import Enum, auto
@@ -59,9 +60,23 @@ class Dataset_(Dataset):
         self.hp = hp
         self.mode = mode
         if mode is DataloaderMode.train:
-            self.data_dir = self.hp.data.train_dir
+            # self.data_dir = self.hp.data.train_dir
+            # TODO: This is example code. You should change this part as you need
+            self.dataset = torchvision.datasets.MNIST(
+                root="dataset/meta",
+                train=True,
+                transform=torchvision.transforms.ToTensor(),
+                download=True,
+            )
         elif mode is DataloaderMode.test:
-            self.data_dir = self.hp.data.test_dir
+            # self.data_dir = self.hp.data.test_dir
+            # TODO: This is example code. You should change this part as you need
+            self.dataset = torchvision.datasets.MNIST(
+                root="dataset/meta",
+                train=False,
+                transform=torchvision.transforms.ToTensor(),
+                download=True,
+            )
         else:
             raise ValueError(f"invalid dataloader mode {mode}")
         self.dataset_files = sorted(
@@ -70,12 +85,9 @@ class Dataset_(Dataset):
                 glob.glob(os.path.join(self.data_dir, self.hp.data.file_format)),
             )
         )
-        self.dataset = list()
+        # self.dataset = list()
         for dataset_file in self.dataset_files:
-            # TODO: This is example code. You should change this part as you need
             pass
-        # TODO: This is example code. You should change this part as you need
-        self.dataset = [(torch.rand(10), torch.rand(1)) for _ in range(64)]
 
     def __len__(self):
         return len(self.dataset)

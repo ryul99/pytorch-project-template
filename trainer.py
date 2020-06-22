@@ -67,7 +67,7 @@ def train_loop(rank, hp, world_size=0):
 
     # init Model
     net_arch = Net_arch(hp)
-    loss_f = torch.nn.MSELoss()
+    loss_f = torch.nn.CrossEntropyLoss()
     model = Model(hp, net_arch, loss_f, rank, world_size)
 
     # load training state / network checkpoint

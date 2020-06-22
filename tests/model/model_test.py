@@ -11,13 +11,13 @@ from model.model import Model
 class TestModel(ProjectTestCase):
     @classmethod
     def setup_class(cls):
-        cls.input_ = torch.rand(64, 10)
-        cls.gt = torch.rand(64, 1)
+        cls.input_ = torch.rand(8, 1, 28, 28)
+        cls.gt = torch.randint(9, (8,))
 
     def setup_method(self, method):
         super(TestModel, self).setup_method()
         self.net = Net_arch(self.hp)
-        self.loss_f = nn.MSELoss()
+        self.loss_f = nn.CrossEntropyLoss()
         self.model = Model(self.hp, self.net, self.loss_f)
 
     def test_model(self):
@@ -42,7 +42,7 @@ class TestModel(ProjectTestCase):
     def test_run_network(self):
         self.model.feed_data(input=self.input_, GT=self.gt)
         output = self.model.run_network()
-        assert output.shape == self.model.GT.shape
+        assert output.shape == self.model.GT.shape + (10,)
 
     def test_optimize_parameters(self):
         self.model.feed_data(input=self.input_, GT=self.gt)
@@ -52,7 +52,7 @@ class TestModel(ProjectTestCase):
     def test_inference(self):
         self.model.feed_data(input=self.input_, GT=self.gt)
         output = self.model.inference()
-        assert output.shape == self.model.GT.shape
+        assert output.shape == self.model.GT.shape + (10,)
 
     def test_save_load_network(self):
         local_net = Net_arch(self.hp)

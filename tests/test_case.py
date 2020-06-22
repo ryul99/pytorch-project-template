@@ -11,11 +11,6 @@ TEST_DIR = tempfile.mkdtemp(prefix="project_tests")
 
 
 class ProjectTestCase:
-    """
-    A custom subclass of `unittest.TestCase` that disables some of the more verbose AllenNLP
-    logging and that creates and destroys a temp directory as a test fixture.
-    """
-
     def setup_method(self):
         # set log/checkpoint dir
         self.TEST_DIR = pathlib.Path(TEST_DIR)
