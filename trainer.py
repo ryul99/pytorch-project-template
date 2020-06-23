@@ -76,7 +76,8 @@ def train_loop(rank, hp, world_size=0):
             download=True,
         )
     # Sync dist processes (because of download MNIST Dataset)
-    dist.barrier()
+    if hp.model.device == "cuda" and world_size != 0:
+        dist.barrier()
 
     # make dataloader
     if logger is not None:
@@ -118,7 +119,7 @@ def train_loop(rank, hp, world_size=0):
         else:
             traceback.print_exc()
     finally:
-        if world_size != 0:
+        if hp.model.device == "cuda" and world_size != 0:
             cleanup()
 
 
