@@ -111,8 +111,7 @@ def train_loop(rank, hp, world_size=0):
             logger.info("End of Train")
     except Exception as e:
         if logger is not None:
-            logger.info("Exiting due to exception: %s" % e)
-        traceback.print_exc()
+            logger.error(traceback.format_exc())
     finally:
         if world_size != 0:
             cleanup()
