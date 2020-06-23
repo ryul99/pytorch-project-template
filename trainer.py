@@ -5,6 +5,7 @@ import traceback
 import random
 import os
 import torch
+import torchvision
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
@@ -56,6 +57,23 @@ def train_loop(rank, hp, world_size=0):
             logger.error("train or test data directory cannot be empty.")
             raise Exception("Please specify directories of data")
         logger.info("Set up train process")
+
+        # download MNIST dataset before making dataloader
+        # TODO: This is example code. You should change this part as you need
+        _ = torchvision.datasets.MNIST(
+            root="dataset/meta",
+            train=True,
+            transform=torchvision.transforms.ToTensor(),
+            download=True,
+        )
+        _ = torchvision.datasets.MNIST(
+            root="dataset/meta",
+            train=False,
+            transform=torchvision.transforms.ToTensor(),
+            download=True,
+        )
+    # Sync dist processes (because of download MNIST Dataset)
+    torch.distributed.barrier()
 
     # make dataloader
     if logger is not None:

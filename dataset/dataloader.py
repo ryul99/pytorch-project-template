@@ -66,7 +66,7 @@ class Dataset_(Dataset):
                 root="dataset/meta",
                 train=True,
                 transform=torchvision.transforms.ToTensor(),
-                download=True,
+                download=False,
             )
         elif mode is DataloaderMode.test:
             # self.data_dir = self.hp.data.test_dir
@@ -75,7 +75,7 @@ class Dataset_(Dataset):
                 root="dataset/meta",
                 train=False,
                 transform=torchvision.transforms.ToTensor(),
-                download=True,
+                download=False,
             )
         else:
             raise ValueError(f"invalid dataloader mode {mode}")
