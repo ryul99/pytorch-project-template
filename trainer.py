@@ -38,6 +38,8 @@ def distributed_run(fn, hp, world_size):
 def train_loop(rank, hp, world_size=0):
     if hp.model.device == "cuda" and world_size != 0:
         hp.model.device = rank
+        # turn off background generator when distributed run is on
+        hp.data.use_background_generator = False
         setup(hp, rank, world_size)
         torch.cuda.set_device(hp.model.device)
 
@@ -57,6 +59,7 @@ def train_loop(rank, hp, world_size=0):
             logger.error("train or test data directory cannot be empty.")
             raise Exception("Please specify directories of data")
         logger.info("Set up train process")
+        logger.info("BackgroundGenerator is turned off when Distributed running is on")
 
         # download MNIST dataset before making dataloader
         # TODO: This is example code. You should change this part as you need
@@ -73,7 +76,7 @@ def train_loop(rank, hp, world_size=0):
             download=True,
         )
     # Sync dist processes (because of download MNIST Dataset)
-    torch.distributed.barrier()
+    dist.barrier()
 
     # make dataloader
     if logger is not None:
