@@ -102,7 +102,10 @@ def train_loop(rank, hp, world_size=0):
             logger.info("Starting new training run.")
 
     try:
-        epoch_step = 1 if hp.data.divide_dataset_per_gpu else world_size
+        if world_size == 0 or hp.data.divide_dataset_per_gpu:
+            epoch_step = 1
+        else:
+            epoch_step = world_size
         for model.epoch in itertools.count(model.epoch + 1, epoch_step):
             if model.epoch > hp.train.num_epoch:
                 break
