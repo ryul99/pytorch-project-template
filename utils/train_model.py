@@ -15,6 +15,6 @@ def train_model(hp, model, train_loader, writer, logger):
 
         if model.step % hp.log.summary_interval == 0:
             if writer is not None:
-                writer.train_logging(loss, model.step)
+                writer.logging_with_step(loss, model.step, "train_loss")
             if logger is not None:
                 logger.info("Train Loss %.04f at step %d" % (loss, model.step))
