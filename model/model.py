@@ -10,13 +10,12 @@ from utils.utils import DotDict
 
 
 class Model:
-    def __init__(self, hp, net_arch, loss_f, rank=0, world_size=1):
+    def __init__(self, hp, net_arch, loss_f, rank=0):
         self.hp = hp
         self.device = self.hp.model.device
         self.net = net_arch.to(self.device)
         self.rank = rank
-        self.world_size = world_size
-        if self.device != "cpu" and self.world_size != 0:
+        if self.device != "cpu" and self.hp.train.dist.gpus != 0:
             self.net = DDP(self.net, device_ids=[self.rank])
         self.input = None
         self.GT = None

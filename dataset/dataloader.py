@@ -20,16 +20,16 @@ class DataLoader_(DataLoader):
         return BackgroundGenerator(super().__iter__())
 
 
-def create_dataloader(hp, mode, rank, world_size):
+def create_dataloader(hp, mode, rank):
     if hp.data.use_background_generator:
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
-    dataset = Dataset_(hp, mode, rank, world_size)
+    dataset = Dataset_(hp, mode, rank)
     train_use_shuffle = True
     sampler = None
-    if world_size > 0 and hp.data.divide_dataset_per_gpu:
-        sampler = DistributedSampler(dataset, world_size, rank)
+    if hp.train.dist.gpus > 0 and hp.data.divide_dataset_per_gpu:
+        sampler = DistributedSampler(dataset, hp.train.dist.gpus, rank)
         train_use_shuffle = False
     if mode is DataloaderMode.train:
         return data_loader(
@@ -56,9 +56,10 @@ def create_dataloader(hp, mode, rank, world_size):
 
 
 class Dataset_(Dataset):
-    def __init__(self, hp, mode, rank, world_size):
+    def __init__(self, hp, mode, rank):
         self.hp = hp
         self.mode = mode
+        self.rank = rank
         if mode is DataloaderMode.train:
             # self.data_dir = self.hp.data.train_dir
             # TODO: This is example code. You should change this part as you need
