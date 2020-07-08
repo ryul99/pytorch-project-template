@@ -19,28 +19,30 @@ from utils.logger import make_logger
 from dataset.dataloader import create_dataloader, DataloaderMode
 
 
-def setup(hp, rank, world_size):
+def setup(hp, rank):
     os.environ["MASTER_ADDR"] = hp.train.dist.master_addr
     os.environ["MASTER_PORT"] = hp.train.dist.master_port
 
     # initialize the process group
-    dist.init_process_group(hp.train.dist.mode, rank=rank, world_size=world_size)
+    dist.init_process_group(
+        hp.train.dist.mode, rank=rank, world_size=hp.train.dist.gpus
+    )
 
 
 def cleanup():
     dist.destroy_process_group()
 
 
-def distributed_run(fn, hp, world_size):
-    mp.spawn(fn, args=(hp, world_size,), nprocs=world_size, join=True)
+def distributed_run(fn, hp):
+    mp.spawn(fn, args=(hp,), nprocs=hp.train.dist.gpus, join=True)
 
 
-def train_loop(rank, hp, world_size=0):
-    if hp.model.device == "cuda" and world_size != 0:
+def train_loop(rank, hp):
+    if hp.model.device == "cuda" and hp.train.dist.gpus != 0:
         hp.model.device = rank
         # turn off background generator when distributed run is on
         hp.data.use_background_generator = False
-        setup(hp, rank, world_size)
+        setup(hp, rank)
         torch.cuda.set_device(hp.model.device)
 
     # setup logger / writer
@@ -76,21 +78,21 @@ def train_loop(rank, hp, world_size=0):
             download=True,
         )
     # Sync dist processes (because of download MNIST Dataset)
-    if world_size != 0:
+    if hp.train.dist.gpus != 0:
         dist.barrier()
 
     # make dataloader
     if logger is not None:
         logger.info("Making train dataloader...")
-    train_loader = create_dataloader(hp, DataloaderMode.train, rank, world_size)
+    train_loader = create_dataloader(hp, DataloaderMode.train, rank)
     if logger is not None:
         logger.info("Making test dataloader...")
-    test_loader = create_dataloader(hp, DataloaderMode.test, rank, world_size)
+    test_loader = create_dataloader(hp, DataloaderMode.test, rank)
 
     # init Model
     net_arch = Net_arch(hp)
     loss_f = torch.nn.CrossEntropyLoss()
-    model = Model(hp, net_arch, loss_f, rank, world_size)
+    model = Model(hp, net_arch, loss_f, rank)
 
     # load training state / network checkpoint
     if hp.load.resume_state_path is not None:
@@ -102,10 +104,10 @@ def train_loop(rank, hp, world_size=0):
             logger.info("Starting new training run.")
 
     try:
-        if world_size == 0 or hp.data.divide_dataset_per_gpu:
+        if hp.train.dist.gpus == 0 or hp.data.divide_dataset_per_gpu:
             epoch_step = 1
         else:
-            epoch_step = world_size
+            epoch_step = hp.train.dist.gpus
         for model.epoch in itertools.count(model.epoch + 1, epoch_step):
             if model.epoch > hp.train.num_epoch:
                 break
@@ -122,7 +124,7 @@ def train_loop(rank, hp, world_size=0):
         else:
             traceback.print_exc()
     finally:
-        if world_size != 0:
+        if hp.train.dist.gpus != 0:
             cleanup()
 
 
@@ -153,9 +155,10 @@ def main():
     if hp.train.dist.gpus < 0:
         hp.train.dist.gpus = torch.cuda.device_count()
     if hp.model.device == "cpu" or hp.train.dist.gpus == 0:
+        hp.train.dist.gpus = 0
         train_loop(0, hp)
     else:
-        distributed_run(train_loop, hp, hp.train.dist.gpus)
+        distributed_run(train_loop, hp)
 
 
 if __name__ == "__main__":
