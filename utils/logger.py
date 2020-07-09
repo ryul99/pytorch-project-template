@@ -5,13 +5,16 @@ from utils.utils import get_timestamp
 
 def make_logger(hp):
     # set log/checkpoint dir
-    hp.log.chkpt_dir = os.path.join(hp.log.chkpt_dir, hp.log.name)
+    timestamp = get_timestamp()
+    hp.log.chkpt_dir = os.path.join(
+        hp.log.chkpt_dir, "%s-%s" % (hp.log.name, timestamp)
+    )
     hp.log.log_dir = os.path.join(hp.log.log_dir, hp.log.name)
     os.makedirs(hp.log.chkpt_dir, exist_ok=True)
     os.makedirs(hp.log.log_dir, exist_ok=True)
 
     hp.log.log_file_path = os.path.join(
-        hp.log.log_dir, "%s-%s.log" % (hp.log.name, get_timestamp())
+        hp.log.log_dir, "%s-%s.log" % (hp.log.name, timestamp)
     )
 
     # set logger

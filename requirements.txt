@@ -2,7 +2,6 @@ numpy
 pyyaml
 sklearn
 matplotlib
-tensorboardX
 prefetch_generator
 wandb
 torch

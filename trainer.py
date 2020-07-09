@@ -50,10 +50,10 @@ def train_loop(rank, hp):
         logger = None
         writer = None
     else:
+        # set writer (tensorboard / wandb)
+        writer = Writer(hp, os.path.join(hp.log.log_dir, "tensorboard", hp.log.name))
         # set logger
         logger = make_logger(hp)
-        # set writer (tensorboard / wandb)
-        writer = Writer(hp, os.path.join(hp.log.log_dir, "tensorboard"))
         hp_str = yaml.dump(hp.to_dict())
         logger.info("Config:")
         logger.info(hp_str)
