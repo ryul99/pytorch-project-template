@@ -6,3 +6,4 @@ prefetch_generator
 wandb
 torch
 torchvision
+tensorboard
