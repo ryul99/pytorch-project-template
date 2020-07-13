@@ -55,8 +55,7 @@ def train_loop(rank, hp):
         # set logger
         logger = make_logger(hp)
         hp_str = yaml.dump(hp.to_dict())
-        logger.info("Config:")
-        logger.info(hp_str)
+        logger.info("Config:\n" + hp_str)
         if hp.data.train_dir == "" or hp.data.test_dir == "":
             logger.error("train or test data directory cannot be empty.")
             raise Exception("Please specify directories of data")
