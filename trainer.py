@@ -25,7 +25,7 @@ def setup(hp, rank):
     os.environ["MASTER_PORT"] = hp.train.dist.master_port
     timeout_sec = 1800
     if hp.train.dist.timeout is not None:
-        os.environ["NCCL_BLOCKING_WAIT"] = 1
+        os.environ["NCCL_BLOCKING_WAIT"] = "1"
         timeout_sec = hp.train.dist.timeout
     timeout = datetime.timedelta(seconds=timeout_sec)
 
