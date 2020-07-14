@@ -48,8 +48,11 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
     - `random_seed` is for setting python, numpy, pytorch random seed.
     - `num_epoch` is for end iteration step of training.
     - `optimizer` is for selecting optimizer. Only `adam optimizer` is supported for now.
-    - `dist` is for configuring Distributed Data Parallel. `gpus` is the number that you want to use with DDP (`gpus` value is used at `world_size` in DDP). 
-    Not using DDP when `gpus` is 0, using all gpus when `gpus` is -1.
+    - `dist` is for configuring Distributed Data Parallel.
+        - `gpus` is the number that you want to use with DDP (`gpus` value is used at `world_size` in DDP).
+        Not using DDP when `gpus` is 0, using all gpus when `gpus` is -1.
+        - `timeout` is seconds for timeout of process interaction in DDP.
+        When this is set as `~`, default timeout (1800 seconds) is applied in `gloo` mode and timeout is turned off in `nccl` mode.
 - `model` field
     - Configs for Network architecture and options for model like device.
     - You can add configs in yaml format to config your network.

@@ -22,6 +22,7 @@ train:
     master_port: '12355'
     mode: 'nccl'
     gpus: 8 # 0 for not using dist, -1 for using all gpus
+    timeout: 30 # seconds for timeout. In nccl mode, set ~ for not using timeout
 ---
 test:
   num_workers: 4

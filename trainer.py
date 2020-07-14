@@ -1,3 +1,4 @@
+import datetime
 import argparse
 import yaml
 import itertools
@@ -22,10 +23,15 @@ from dataset.dataloader import create_dataloader, DataloaderMode
 def setup(hp, rank):
     os.environ["MASTER_ADDR"] = hp.train.dist.master_addr
     os.environ["MASTER_PORT"] = hp.train.dist.master_port
+    timeout_sec = 1800
+    if hp.train.dist.timeout is not None:
+        os.environ["NCCL_BLOCKING_WAIT"] = 1
+        timeout_sec = hp.train.dist.timeout
+    timeout = datetime.timedelta(seconds=timeout_sec)
 
     # initialize the process group
     dist.init_process_group(
-        hp.train.dist.mode, rank=rank, world_size=hp.train.dist.gpus
+        hp.train.dist.mode, rank=rank, world_size=hp.train.dist.gpus, timeout=timeout
     )
 
 
