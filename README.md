@@ -84,4 +84,3 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 
 - https://github.com/open-mmlab/mmsr
 - https://github.com/allenai/allennlp (test case writing)
-- https://github.com/mindslab-ai/voicefilter
