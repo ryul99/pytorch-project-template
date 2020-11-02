@@ -4,7 +4,6 @@ data:
   file_format: '*.file_extension'
   use_background_generator: true
   divide_dataset_per_gpu: true
----
 train:
   random_seed: ~
   num_epoch: 10000  # max iteration
@@ -23,26 +22,24 @@ train:
     mode: 'nccl'
     gpus: 8 # 0 for not using dist, -1 for using all gpus
     timeout: 30 # seconds for timeout. In nccl mode, set ~ for not using timeout
----
 test:
   num_workers: 4
   batch_size: 64
----
 model:
   device: 'cuda'
----
 log:
   name: 'Fisrt_training'
   use_tensorboard: true
   use_wandb: false
   wandb_init_conf:
+    name: ${log.name}
     entity: ~
     project: ~
   summary_interval: 1 # interval of step
   chkpt_interval: 10 # interval of epoch
   chkpt_dir: 'chkpt'
   log_dir: 'logs'
----
+  log_file_path: ~
 load:
   wandb_load_path: ~
   network_chkpt_path: ~
