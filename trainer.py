@@ -5,33 +5,35 @@ import itertools
 import traceback
 import random
 import os
+import hydra
 import torch
 import torchvision
 import torch.distributed as dist
 import torch.multiprocessing as mp
+from omegaconf import OmegaConf
 
 from model.model_arch import Net_arch
 from model.model import Model
 from utils.train_model import train_model
 from utils.test_model import test_model
-from utils.utils import load_hparam, set_random_seed, DotDict
+from utils.utils import set_random_seed
 from utils.writer import Writer
 from utils.logger import make_logger
 from dataset.dataloader import create_dataloader, DataloaderMode
 
 
-def setup(hp, rank):
-    os.environ["MASTER_ADDR"] = hp.train.dist.master_addr
-    os.environ["MASTER_PORT"] = hp.train.dist.master_port
+def setup(cfg, rank):
+    os.environ["MASTER_ADDR"] = cfg.train.dist.master_addr
+    os.environ["MASTER_PORT"] = cfg.train.dist.master_port
     timeout_sec = 1800
-    if hp.train.dist.timeout is not None:
+    if cfg.train.dist.timeout is not None:
         os.environ["NCCL_BLOCKING_WAIT"] = "1"
-        timeout_sec = hp.train.dist.timeout
+        timeout_sec = cfg.train.dist.timeout
     timeout = datetime.timedelta(seconds=timeout_sec)
 
     # initialize the process group
     dist.init_process_group(
-        hp.train.dist.mode, rank=rank, world_size=hp.train.dist.gpus, timeout=timeout
+        cfg.train.dist.mode, rank=rank, world_size=cfg.train.dist.gpus, timeout=timeout
     )
 
 
@@ -39,17 +41,17 @@ def cleanup():
     dist.destroy_process_group()
 
 
-def distributed_run(fn, hp):
-    mp.spawn(fn, args=(hp,), nprocs=hp.train.dist.gpus, join=True)
+def distributed_run(fn, cfg):
+    mp.spawn(fn, args=(cfg,), nprocs=cfg.train.dist.gpus, join=True)
 
 
-def train_loop(rank, hp):
-    if hp.model.device == "cuda" and hp.train.dist.gpus != 0:
-        hp.model.device = rank
+def train_loop(rank, cfg):
+    if cfg.model.device == "cuda" and cfg.train.dist.gpus != 0:
+        cfg.model.device = rank
         # turn off background generator when distributed run is on
-        hp.data.use_background_generator = False
-        setup(hp, rank)
-        torch.cuda.set_device(hp.model.device)
+        cfg.data.use_background_generator = False
+        setup(cfg, rank)
+        torch.cuda.set_device(cfg.model.device)
 
     # setup logger / writer
     if rank != 0:
@@ -57,12 +59,12 @@ def train_loop(rank, hp):
         writer = None
     else:
         # set writer (tensorboard / wandb)
-        writer = Writer(hp, os.path.join(hp.log.log_dir, "tensorboard", hp.log.name))
+        writer = Writer(cfg, os.path.join(cfg.log.log_dir, "tensorboard", cfg.log.name))
         # set logger
-        logger = make_logger(hp)
-        hp_str = yaml.dump(hp.to_dict())
-        logger.info("Config:\n" + hp_str)
-        if hp.data.train_dir == "" or hp.data.test_dir == "":
+        logger = make_logger(cfg)
+        cfg_str = OmegaConf.to_yaml(cfg)
+        logger.info("Config:\n" + cfg_str)
+        if cfg.data.train_dir == "" or cfg.data.test_dir == "":
             logger.error("train or test data directory cannot be empty.")
             raise Exception("Please specify directories of data")
         logger.info("Set up train process")
@@ -83,44 +85,44 @@ def train_loop(rank, hp):
             download=True,
         )
     # Sync dist processes (because of download MNIST Dataset)
-    if hp.train.dist.gpus != 0:
+    if cfg.train.dist.gpus != 0:
         dist.barrier()
 
     # make dataloader
     if logger is not None:
         logger.info("Making train dataloader...")
-    train_loader = create_dataloader(hp, DataloaderMode.train, rank)
+    train_loader = create_dataloader(cfg, DataloaderMode.train, rank)
     if logger is not None:
         logger.info("Making test dataloader...")
-    test_loader = create_dataloader(hp, DataloaderMode.test, rank)
+    test_loader = create_dataloader(cfg, DataloaderMode.test, rank)
 
     # init Model
-    net_arch = Net_arch(hp)
+    net_arch = Net_arch(cfg)
     loss_f = torch.nn.CrossEntropyLoss()
-    model = Model(hp, net_arch, loss_f, rank)
+    model = Model(cfg, net_arch, loss_f, rank)
 
     # load training state / network checkpoint
-    if hp.load.resume_state_path is not None:
+    if cfg.load.resume_state_path is not None:
         model.load_training_state(logger)
-    elif hp.load.network_chkpt_path is not None:
+    elif cfg.load.network_chkpt_path is not None:
         model.load_network(logger=logger)
     else:
         if logger is not None:
             logger.info("Starting new training run.")
 
     try:
-        if hp.train.dist.gpus == 0 or hp.data.divide_dataset_per_gpu:
+        if cfg.train.dist.gpus == 0 or cfg.data.divide_dataset_per_gpu:
             epoch_step = 1
         else:
-            epoch_step = hp.train.dist.gpus
+            epoch_step = cfg.train.dist.gpus
         for model.epoch in itertools.count(model.epoch + 1, epoch_step):
-            if model.epoch > hp.train.num_epoch:
+            if model.epoch > cfg.train.num_epoch:
                 break
-            train_model(hp, model, train_loader, writer, logger)
-            if model.epoch % hp.log.chkpt_interval == 0:
+            train_model(cfg, model, train_loader, writer, logger)
+            if model.epoch % cfg.log.chkpt_interval == 0:
                 model.save_network(logger)
                 model.save_training_state(logger)
-            test_model(hp, model, test_loader, writer, logger)
+            test_model(cfg, model, test_loader, writer, logger)
         if logger is not None:
             logger.info("End of Train")
     except Exception as e:
@@ -129,41 +131,26 @@ def train_loop(rank, hp):
         else:
             traceback.print_exc()
     finally:
-        if hp.train.dist.gpus != 0:
+        if cfg.train.dist.gpus != 0:
             cleanup()
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-c", "--config", type=str, required=True, help="yaml file for config."
-    )
-    parser.add_argument(
-        "-n",
-        "--name",
-        type=str,
-        default=None,
-        help="Name of the model. Used for both logging and saving chkpt.",
-    )
-    args = parser.parse_args()
-    hp = load_hparam(args.config)
-    hp.model.device = hp.model.device.lower()
-
-    if args.name is not None:
-        hp.log.name = args.name
+@hydra.main(config_path="config/default.yaml")
+def main(hydra_cfg):
+    hydra_cfg.model.device = hydra_cfg.model.device.lower()
 
     # random seed
-    if hp.train.random_seed is None:
-        hp.train.random_seed = random.randint(1, 10000)
-    set_random_seed(hp.train.random_seed)
+    if hydra_cfg.train.random_seed is None:
+        hydra_cfg.train.random_seed = random.randint(1, 10000)
+    set_random_seed(hydra_cfg.train.random_seed)
 
-    if hp.train.dist.gpus < 0:
-        hp.train.dist.gpus = torch.cuda.device_count()
-    if hp.model.device == "cpu" or hp.train.dist.gpus == 0:
-        hp.train.dist.gpus = 0
-        train_loop(0, hp)
+    if hydra_cfg.train.dist.gpus < 0:
+        hydra_cfg.train.dist.gpus = torch.cuda.device_count()
+    if hydra_cfg.model.device == "cpu" or hydra_cfg.train.dist.gpus == 0:
+        hydra_cfg.train.dist.gpus = 0
+        train_loop(0, hydra_cfg)
     else:
-        distributed_run(train_loop, hp)
+        distributed_run(train_loop, hydra_cfg)
 
 
 if __name__ == "__main__":

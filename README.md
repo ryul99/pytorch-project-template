@@ -8,6 +8,7 @@
 - Training state and network checkpoint saving, loading
     - Training state includes not only network weights, but also optimizer, step, epoch.
     - Checkpoint includes only network weights. This could be used for inference. 
+- [Hydra](https://hydra.cc) and [Omegaconf](https://github.com/omry/omegaconf) is supported
 - Distributed Learning using Distributed Data Parallel is supported
 - Config with yaml file / easy dot-style access to config
 - Code lint / CI
@@ -77,8 +78,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 
 ## Train
 
-- `python trainer.py -c config/path/to/file -n training_name`
-    - If training name is specified in config, you can omit training name in command line argument.
+- `python trainer.py`
 
 ## Inspired by
 

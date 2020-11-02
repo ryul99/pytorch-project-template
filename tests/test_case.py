@@ -4,8 +4,8 @@ import os
 import pathlib
 import shutil
 import tempfile
-from utils.utils import load_hparam
 from utils.logger import make_logger
+from hydra.experimental import initialize, compose
 
 TEST_DIR = tempfile.mkdtemp(prefix="project_tests")
 
@@ -20,16 +20,17 @@ class ProjectTestCase:
         os.makedirs(self.log_dir, exist_ok=True)
         os.makedirs(self.chkpt_dir, exist_ok=True)
 
-        # set hp
-        self.hp = load_hparam("config/default.yaml")
-        self.hp.model.device = "cpu"
-        self.hp.log.log_dir = self.log_dir
-        self.hp.log.chkpt_dir = self.chkpt_dir
-        self.hp.log.use_wandb = False
-        self.hp.log.use_tensorboard = False
+        # set cfg
+        with initialize(config_path="../config"):
+            self.cfg = compose(config_name="default")
+        self.cfg.model.device = "cpu"
+        self.cfg.log.log_dir = str(self.log_dir)
+        self.cfg.log.chkpt_dir = str(self.chkpt_dir)
+        self.cfg.log.use_wandb = False
+        self.cfg.log.use_tensorboard = False
 
         # set logger
-        self.logger = make_logger(self.hp)
+        self.logger = make_logger(self.cfg)
 
     def teardown_method(self):
         shutil.rmtree(self.TEST_DIR)

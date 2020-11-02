@@ -16,18 +16,18 @@ class TestModel(ProjectTestCase):
 
     def setup_method(self, method):
         super(TestModel, self).setup_method()
-        self.net = Net_arch(self.hp)
+        self.net = Net_arch(self.cfg)
         self.loss_f = nn.CrossEntropyLoss()
-        self.model = Model(self.hp, self.net, self.loss_f)
+        self.model = Model(self.cfg, self.net, self.loss_f)
 
     def test_model(self):
-        assert self.model.hp == self.hp
+        assert self.model.cfg == self.cfg
         assert self.model.net == self.net
         assert self.model.loss_f == self.loss_f
 
     def test_feed_data(self):
-        device_input_ = self.input_.to(self.hp.model.device)
-        device_gt = self.gt.to(self.hp.model.device)
+        device_input_ = self.input_.to(self.cfg.model.device)
+        device_gt = self.gt.to(self.cfg.model.device)
         self.model.feed_data(input=self.input_)
         assert (self.model.input == device_input_).all()
         self.model.feed_data(GT=self.gt)
@@ -55,18 +55,18 @@ class TestModel(ProjectTestCase):
         assert output.shape == self.model.GT.shape + (10,)
 
     def test_save_load_network(self):
-        local_net = Net_arch(self.hp)
+        local_net = Net_arch(self.cfg)
         self.loss_f = nn.MSELoss()
-        local_model = Model(self.hp, local_net, self.loss_f)
+        local_model = Model(self.cfg, local_net, self.loss_f)
 
         self.model.save_network(self.logger)
-        save_filename = "%s_%d.pt" % (self.hp.log.name, self.model.step)
-        save_path = os.path.join(self.hp.log.chkpt_dir, save_filename)
-        self.hp.load.network_chkpt_path = save_path
+        save_filename = "%s_%d.pt" % (self.cfg.log.name, self.model.step)
+        save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
+        self.cfg.load.network_chkpt_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
-        assert os.path.exists(self.hp.log.log_file_path) and os.path.isfile(
-            self.hp.log.log_file_path
+        assert os.path.exists(self.cfg.log.log_file_path) and os.path.isfile(
+            self.cfg.log.log_file_path
         )
 
         local_model.load_network(logger=self.logger)
@@ -77,18 +77,18 @@ class TestModel(ProjectTestCase):
             assert (load == origin).all()
 
     def test_save_load_state(self):
-        local_net = Net_arch(self.hp)
+        local_net = Net_arch(self.cfg)
         self.loss_f = nn.MSELoss()
-        local_model = Model(self.hp, local_net, self.loss_f)
+        local_model = Model(self.cfg, local_net, self.loss_f)
 
         self.model.save_training_state(self.logger)
-        save_filename = "%s_%d.state" % (self.hp.log.name, self.model.step)
-        save_path = os.path.join(self.hp.log.chkpt_dir, save_filename)
-        self.hp.load.resume_state_path = save_path
+        save_filename = "%s_%d.state" % (self.cfg.log.name, self.model.step)
+        save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
+        self.cfg.load.resume_state_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
-        assert os.path.exists(self.hp.log.log_file_path) and os.path.isfile(
-            self.hp.log.log_file_path
+        assert os.path.exists(self.cfg.log.log_file_path) and os.path.isfile(
+            self.cfg.log.log_file_path
         )
 
         local_model.load_training_state(logger=self.logger)

@@ -7,3 +7,5 @@ wandb
 torch
 torchvision
 tensorboard
+hydra-core
+omegaconf

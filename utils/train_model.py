@@ -1,7 +1,7 @@
 import math
 
 
-def train_model(hp, model, train_loader, writer, logger):
+def train_model(cfg, model, train_loader, writer, logger):
     model.net.train()
     for input_, target in train_loader:
         model.feed_data(input=input_, GT=target)
@@ -13,7 +13,7 @@ def train_model(hp, model, train_loader, writer, logger):
             logger.error("Loss exploded to %.02f at step %d!" % (loss, model.step))
             raise Exception("Loss exploded")
 
-        if model.step % hp.log.summary_interval == 0:
+        if model.step % cfg.log.summary_interval == 0:
             if writer is not None:
                 writer.logging_with_step(loss, model.step, "train_loss")
             if logger is not None:
