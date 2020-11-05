@@ -38,6 +38,8 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 ### Config
 
 - Config is written in yaml file(default: `config/default.yaml`)
+- `name` is train name you run.
+- `working_dir` is root directory for saving checkpoints, logging logs.
 - `data` field
     - Configs for Dataloader.
     - glob `train_dir` / `test_dir` with `file_format` for Dataloader.
@@ -58,10 +60,9 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
     - Configs for Network architecture and options for model like device.
     - You can add configs in yaml format to config your network.
 - `log` field
-    - Configs for logging include tensorboard / wandb logging.
-    - `name` is train name you run. 
+    - Configs for logging include tensorboard / wandb logging. 
     - `summary_interval` and `checkpoint_interval` are interval of step and epoch between training logging and checkpoint saving.
-    - checkpoint and logs are saved under `chkpt_dir/name` and `log_dir/name`. Tensorboard logs are saving under `log_dir/name/tensorboard`
+    - checkpoint and logs are saved under `working_dir/chkpt_dir` and `working_dir/trainer.log`. Tensorboard logs are saving under `working_dir/outputs/tensorboard`
 - `load` field
     - loading from wandb server is supported
     - `wandb_load_path` is `Run path` in overview of run. If you don't want to use wandb load, this field should be `~`.
@@ -78,7 +79,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 
 ## Train
 
-- `python trainer.py`
+- `python trainer.py train.working_dir=$(pwd)`
 
 ## Inspired by
 

@@ -5,17 +5,21 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from collections import OrderedDict
 import os.path as osp
 import wandb
+import logging
 
 from utils.utils import DotDict
+
+
+logger = logging.getLogger(osp.basename(__file__))
 
 
 class Model:
     def __init__(self, cfg, net_arch, loss_f, rank=0):
         self.cfg = cfg
-        self.device = self.cfg.model.device
+        self.device = self.cfg.train.model.device
         self.net = net_arch.to(self.device)
         self.rank = rank
-        if self.device != "cpu" and self.cfg.train.dist.gpus != 0:
+        if self.device != "cpu" and self.cfg.train.train.dist.gpus != 0:
             self.net = DDP(self.net, device_ids=[self.rank])
         self.input = None
         self.GT = None
@@ -23,10 +27,11 @@ class Model:
         self.epoch = -1
 
         # init optimizer
-        optimizer_mode = self.cfg.train.optimizer.mode
+        optimizer_mode = self.cfg.train.train.optimizer.mode
         if optimizer_mode == "adam":
             self.optimizer = torch.optim.Adam(
-                self.net.parameters(), **(self.cfg.train.optimizer[optimizer_mode])
+                self.net.parameters(),
+                **(self.cfg.train.train.optimizer[optimizer_mode])
             )
         else:
             raise Exception("%s optimizer not supported" % optimizer_mode)
@@ -61,33 +66,34 @@ class Model:
         output = self.net(self.input)
         return output
 
-    def save_network(self, logger, save_file=True):
+    def save_network(self, rank, save_file=True):
         if self.rank == 0:
             net = self.net.module if isinstance(self.net, DDP) else self.net
             state_dict = net.state_dict()
             for key, param in state_dict.items():
                 state_dict[key] = param.to("cpu")
             if save_file:
-                save_filename = "%s_%d.pt" % (self.cfg.log.name, self.step)
-                save_path = osp.join(self.cfg.log.chkpt_dir, save_filename)
+                save_filename = "%s_%d.pt" % (self.cfg.train.name, self.step)
+                save_path = osp.join(self.cfg.train.log.chkpt_dir, save_filename)
                 torch.save(state_dict, save_path)
-                if self.cfg.log.use_wandb:
+                if self.cfg.train.log.use_wandb:
                     wandb.save(save_path)
-                if logger is not None:
+                if rank == 0:
                     logger.info("Saved network checkpoint to: %s" % save_path)
             return state_dict
 
-    def load_network(self, loaded_net=None, logger=None):
+    def load_network(self, loaded_net=None, rank=-1):
         add_log = False
         if loaded_net is None:
             add_log = True
-            if self.cfg.load.wandb_load_path is not None:
-                self.cfg.load.network_chkpt_path = wandb.restore(
-                    self.cfg.load.network_chkpt_path,
-                    run_path=self.cfg.load.wandb_load_path,
+            if self.cfg.train.load.wandb_load_path is not None:
+                self.cfg.train.load.network_chkpt_path = wandb.restore(
+                    self.cfg.train.load.network_chkpt_path,
+                    run_path=self.cfg.train.load.wandb_load_path,
                 ).name
             loaded_net = torch.load(
-                self.cfg.load.network_chkpt_path, map_location=torch.device(self.device)
+                self.cfg.train.load.network_chkpt_path,
+                map_location=torch.device(self.device),
             )
         loaded_clean_net = OrderedDict()  # remove unnecessary 'module.'
         for k, v in loaded_net.items():
@@ -96,14 +102,18 @@ class Model:
             else:
                 loaded_clean_net[k] = v
 
-        self.net.load_state_dict(loaded_clean_net, strict=self.cfg.load.strict_load)
-        if logger is not None and add_log:
-            logger.info("Checkpoint %s is loaded" % self.cfg.load.network_chkpt_path)
+        self.net.load_state_dict(
+            loaded_clean_net, strict=self.cfg.train.load.strict_load
+        )
+        if rank == 0 and add_log:
+            logger.info(
+                "Checkpoint %s is loaded" % self.cfg.train.load.network_chkpt_path
+            )
 
-    def save_training_state(self, logger):
+    def save_training_state(self, rank):
         if self.rank == 0:
-            save_filename = "%s_%d.state" % (self.cfg.log.name, self.step)
-            save_path = osp.join(self.cfg.log.chkpt_dir, save_filename)
+            save_filename = "%s_%d.state" % (self.cfg.train.name, self.step)
+            save_path = osp.join(self.cfg.train.log.chkpt_dir, save_filename)
             net_state_dict = self.save_network(None, False)
             state = {
                 "model": net_state_dict,
@@ -112,25 +122,28 @@ class Model:
                 "epoch": self.epoch,
             }
             torch.save(state, save_path)
-            if self.cfg.log.use_wandb:
+            if self.cfg.train.log.use_wandb:
                 wandb.save(save_path)
-            if logger is not None:
+            if rank == 0:
                 logger.info("Saved training state to: %s" % save_path)
 
-    def load_training_state(self, logger):
-        if self.cfg.load.wandb_load_path is not None:
-            self.cfg.load.resume_state_path = wandb.restore(
-                self.cfg.load.resume_state_path, run_path=self.cfg.load.wandb_load_path
+    def load_training_state(self, rank):
+        if self.cfg.train.load.wandb_load_path is not None:
+            self.cfg.train.load.resume_state_path = wandb.restore(
+                self.cfg.train.load.resume_state_path,
+                run_path=self.cfg.train.load.wandb_load_path,
             ).name
         resume_state = torch.load(
-            self.cfg.load.resume_state_path, map_location=torch.device(self.device)
+            self.cfg.train.load.resume_state_path,
+            map_location=torch.device(self.device),
         )
 
-        self.load_network(loaded_net=resume_state["model"], logger=logger)
+        self.load_network(loaded_net=resume_state["model"], rank=rank)
         self.optimizer.load_state_dict(resume_state["optimizer"])
         self.step = resume_state["step"]
         self.epoch = resume_state["epoch"]
-        if logger is not None:
+        if rank == 0:
             logger.info(
-                "Resuming from training state: %s" % self.cfg.load.resume_state_path
+                "Resuming from training state: %s"
+                % self.cfg.train.load.resume_state_path
             )

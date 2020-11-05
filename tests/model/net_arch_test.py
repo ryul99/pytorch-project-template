@@ -1,11 +1,16 @@
 import torch
+import tempfile
+import os
 from hydra.experimental import initialize, compose
 from model.model_arch import Net_arch
 
+TEST_DIR = tempfile.mkdtemp(prefix="project_tests")
+
 
 def test_net_arch():
+    os.makedirs(TEST_DIR, exist_ok=True)
     with initialize(config_path="../../config"):
-        cfg = compose(config_name="default")
+        cfg = compose(config_name="train", overrides=[f"train.working_dir={TEST_DIR}"])
 
     net = Net_arch(cfg)
 

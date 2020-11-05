@@ -1,0 +1,7 @@
+defaults:
+    - hydra/job_logging: colorlog
+    - hydra/hydra_logging: colorlog
+    - train: default
+hydra:
+    run:
+        dir: ${train.working_dir}/outputs/${train.name}-${now:%Y-%m-%d_%H-%M-%S}

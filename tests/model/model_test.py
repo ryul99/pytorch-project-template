@@ -7,6 +7,8 @@ from tests.test_case import ProjectTestCase
 from model.model_arch import Net_arch
 from model.model import Model
 
+logger = logging.getLogger(os.path.basename(__file__))
+
 
 class TestModel(ProjectTestCase):
     @classmethod
@@ -26,8 +28,8 @@ class TestModel(ProjectTestCase):
         assert self.model.loss_f == self.loss_f
 
     def test_feed_data(self):
-        device_input_ = self.input_.to(self.cfg.model.device)
-        device_gt = self.gt.to(self.cfg.model.device)
+        device_input_ = self.input_.to(self.cfg.train.model.device)
+        device_gt = self.gt.to(self.cfg.train.model.device)
         self.model.feed_data(input=self.input_)
         assert (self.model.input == device_input_).all()
         self.model.feed_data(GT=self.gt)
@@ -59,17 +61,14 @@ class TestModel(ProjectTestCase):
         self.loss_f = nn.MSELoss()
         local_model = Model(self.cfg, local_net, self.loss_f)
 
-        self.model.save_network(self.logger)
-        save_filename = "%s_%d.pt" % (self.cfg.log.name, self.model.step)
-        save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
-        self.cfg.load.network_chkpt_path = save_path
+        self.model.save_network(0)
+        save_filename = "%s_%d.pt" % (self.cfg.train.name, self.model.step)
+        save_path = os.path.join(self.cfg.train.log.chkpt_dir, save_filename)
+        self.cfg.train.load.network_chkpt_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
-        assert os.path.exists(self.cfg.log.log_file_path) and os.path.isfile(
-            self.cfg.log.log_file_path
-        )
 
-        local_model.load_network(logger=self.logger)
+        local_model.load_network(rank=0)
         parameters = zip(
             list(local_model.net.parameters()), list(self.model.net.parameters())
         )
@@ -81,17 +80,14 @@ class TestModel(ProjectTestCase):
         self.loss_f = nn.MSELoss()
         local_model = Model(self.cfg, local_net, self.loss_f)
 
-        self.model.save_training_state(self.logger)
-        save_filename = "%s_%d.state" % (self.cfg.log.name, self.model.step)
-        save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
-        self.cfg.load.resume_state_path = save_path
+        self.model.save_training_state(0)
+        save_filename = "%s_%d.state" % (self.cfg.train.name, self.model.step)
+        save_path = os.path.join(self.cfg.train.log.chkpt_dir, save_filename)
+        self.cfg.train.load.resume_state_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
-        assert os.path.exists(self.cfg.log.log_file_path) and os.path.isfile(
-            self.cfg.log.log_file_path
-        )
 
-        local_model.load_training_state(logger=self.logger)
+        local_model.load_training_state(rank=0)
         parameters = zip(
             list(local_model.net.parameters()), list(self.model.net.parameters())
         )

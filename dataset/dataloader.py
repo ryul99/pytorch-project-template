@@ -21,33 +21,33 @@ class DataLoader_(DataLoader):
 
 
 def create_dataloader(cfg, mode, rank):
-    if cfg.data.use_background_generator:
+    if cfg.train.data.use_background_generator:
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
     dataset = Dataset_(cfg, mode, rank)
     train_use_shuffle = True
     sampler = None
-    if cfg.train.dist.gpus > 0 and cfg.data.divide_dataset_per_gpu:
-        sampler = DistributedSampler(dataset, cfg.train.dist.gpus, rank)
+    if cfg.train.train.dist.gpus > 0 and cfg.train.data.divide_dataset_per_gpu:
+        sampler = DistributedSampler(dataset, cfg.train.train.dist.gpus, rank)
         train_use_shuffle = False
     if mode is DataloaderMode.train:
         return data_loader(
             dataset=dataset,
-            batch_size=cfg.train.batch_size,
+            batch_size=cfg.train.train.batch_size,
             shuffle=train_use_shuffle,
             sampler=sampler,
-            num_workers=cfg.train.num_workers,
+            num_workers=cfg.train.train.num_workers,
             pin_memory=True,
             drop_last=True,
         )
     elif mode is DataloaderMode.test:
         return data_loader(
             dataset=dataset,
-            batch_size=cfg.test.batch_size,
+            batch_size=cfg.train.test.batch_size,
             shuffle=False,
             sampler=sampler,
-            num_workers=cfg.test.num_workers,
+            num_workers=cfg.train.test.num_workers,
             pin_memory=True,
             drop_last=True,
         )
@@ -61,7 +61,7 @@ class Dataset_(Dataset):
         self.mode = mode
         self.rank = rank
         if mode is DataloaderMode.train:
-            # self.data_dir = self.cfg.data.train_dir
+            # self.data_dir = self.cfg.train.data.train_dir
             # TODO: This is example code. You should change this part as you need
             self.dataset = torchvision.datasets.MNIST(
                 root="dataset/meta",
@@ -70,7 +70,7 @@ class Dataset_(Dataset):
                 download=False,
             )
         elif mode is DataloaderMode.test:
-            # self.data_dir = self.cfg.data.test_dir
+            # self.data_dir = self.cfg.train.data.test_dir
             # TODO: This is example code. You should change this part as you need
             self.dataset = torchvision.datasets.MNIST(
                 root="dataset/meta",
@@ -83,7 +83,7 @@ class Dataset_(Dataset):
         # self.dataset_files = sorted(
         #     map(
         #         os.path.abspath,
-        #         glob.glob(os.path.join(self.data_dir, self.cfg.data.file_format)),
+        #         glob.glob(os.path.join(self.data_dir, self.cfg.train.data.file_format)),
         #     )
         # )
         # self.dataset = list()
