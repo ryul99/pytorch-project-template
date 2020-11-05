@@ -1,12 +1,9 @@
 # logs, checkpoints
 chkpt/
 logs/
-dataset/meta/*
-
-
-# configuration yaml files
-config/*
-!config/default.yaml
+dataset/meta/
+outputs/
+wandb/
 
 # just temporary folder...
 temp/
