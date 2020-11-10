@@ -2,12 +2,9 @@ import pytest
 import torch
 import torch.nn as nn
 import os
-import logging
 from tests.test_case import ProjectTestCase
 from model.model_arch import Net_arch
 from model.model import Model
-
-logger = logging.getLogger(os.path.basename(__file__))
 
 
 class TestModel(ProjectTestCase):

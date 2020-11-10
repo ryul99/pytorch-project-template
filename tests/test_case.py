@@ -4,7 +4,7 @@ import os
 import pathlib
 import shutil
 import tempfile
-import logging
+from utils.utils import get_logger
 from hydra.experimental import initialize, compose
 
 TEST_DIR = tempfile.mkdtemp(prefix="project_tests")
@@ -30,7 +30,11 @@ class ProjectTestCase:
         self.cfg.log.use_tensorboard = False
 
         # set logger
-        self.logger = logging.getLogger(os.path.basename(__file__))
+        self.logger = get_logger(
+            self.cfg,
+            os.path.basename(__file__),
+            str((self.working_dir / "trainer.log").resolve()),
+        )
 
     def teardown_method(self):
         shutil.rmtree(self.TEST_DIR)

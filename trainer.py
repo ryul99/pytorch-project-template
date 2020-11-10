@@ -5,7 +5,6 @@ import itertools
 import traceback
 import random
 import os
-import logging
 
 import hydra
 import torch
@@ -18,12 +17,9 @@ from model.model_arch import Net_arch
 from model.model import Model
 from utils.train_model import train_model
 from utils.test_model import test_model
-from utils.utils import set_random_seed, is_logging_process
+from utils.utils import set_random_seed, is_logging_process, get_logger
 from utils.writer import Writer
 from dataset.dataloader import create_dataloader, DataloaderMode
-
-
-logger = logging.getLogger(os.path.basename(__file__))
 
 
 def setup(cfg, rank):
@@ -53,6 +49,7 @@ def distributed_run(fn, cfg):
 
 
 def train_loop(rank, cfg):
+    logger = get_logger(cfg, os.path.basename(__file__))
     if cfg.device == "cuda" and cfg.dist.gpus != 0:
         cfg.device = rank
         # turn off background generator when distributed run is on
@@ -139,7 +136,7 @@ def train_loop(rank, cfg):
             cleanup()
 
 
-@hydra.main(config_path="config/default.yaml")
+@hydra.main(config_path="config", config_name="default")
 def main(hydra_cfg):
     hydra_cfg.device = hydra_cfg.device.lower()
 
