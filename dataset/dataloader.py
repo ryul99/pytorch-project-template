@@ -25,7 +25,7 @@ def create_dataloader(cfg, mode, rank):
         data_loader = DataLoader_
     else:
         data_loader = DataLoader
-    dataset = Dataset_(cfg, mode, rank)
+    dataset = Dataset_(cfg, mode)
     train_use_shuffle = True
     sampler = None
     if cfg.dist.gpus > 0 and cfg.data.divide_dataset_per_gpu:
@@ -56,10 +56,9 @@ def create_dataloader(cfg, mode, rank):
 
 
 class Dataset_(Dataset):
-    def __init__(self, cfg, mode, rank):
+    def __init__(self, cfg, mode):
         self.cfg = cfg
         self.mode = mode
-        self.rank = rank
         if mode is DataloaderMode.train:
             # self.data_dir = self.cfg.data.train_dir
             # TODO: This is example code. You should change this part as you need

@@ -18,7 +18,7 @@ from model.model_arch import Net_arch
 from model.model import Model
 from utils.train_model import train_model
 from utils.test_model import test_model
-from utils.utils import set_random_seed
+from utils.utils import set_random_seed, is_logging_process
 from utils.writer import Writer
 from dataset.dataloader import create_dataloader, DataloaderMode
 
@@ -61,7 +61,7 @@ def train_loop(rank, cfg):
         torch.cuda.set_device(cfg.device)
 
     # setup writer
-    if rank == 0:
+    if is_logging_process():
         # set log/checkpoint dir
         os.makedirs(cfg.log.chkpt_dir, exist_ok=True)
         # set writer (tensorboard / wandb)
@@ -93,10 +93,10 @@ def train_loop(rank, cfg):
         dist.barrier()
 
     # make dataloader
-    if rank == 0:
+    if is_logging_process():
         logger.info("Making train dataloader...")
     train_loader = create_dataloader(cfg, DataloaderMode.train, rank)
-    if rank == 0:
+    if is_logging_process():
         logger.info("Making test dataloader...")
     test_loader = create_dataloader(cfg, DataloaderMode.test, rank)
 
@@ -107,11 +107,11 @@ def train_loop(rank, cfg):
 
     # load training state / network checkpoint
     if cfg.load.resume_state_path is not None:
-        model.load_training_state(rank)
+        model.load_training_state()
     elif cfg.load.network_chkpt_path is not None:
-        model.load_network(rank=rank)
+        model.load_network()
     else:
-        if rank == 0:
+        if is_logging_process():
             logger.info("Starting new training run.")
 
     try:
@@ -122,15 +122,15 @@ def train_loop(rank, cfg):
         for model.epoch in itertools.count(model.epoch + 1, epoch_step):
             if model.epoch > cfg.num_epoch:
                 break
-            train_model(cfg, model, train_loader, writer, rank)
+            train_model(cfg, model, train_loader, writer)
             if model.epoch % cfg.log.chkpt_interval == 0:
-                model.save_network(rank)
-                model.save_training_state(rank)
-            test_model(cfg, model, test_loader, writer, rank)
-        if rank == 0:
+                model.save_network()
+                model.save_training_state()
+            test_model(cfg, model, test_loader, writer)
+        if is_logging_process():
             logger.info("End of Train")
     except Exception as e:
-        if rank == 0:
+        if is_logging_process():
             logger.error(traceback.format_exc())
         else:
             traceback.print_exc()
