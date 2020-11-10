@@ -7,7 +7,7 @@ import os.path as osp
 import wandb
 import logging
 
-from utils.utils import DotDict
+from utils.utils import DotDict, is_logging_process
 
 
 logger = logging.getLogger(osp.basename(__file__))
@@ -65,8 +65,8 @@ class Model:
         output = self.net(self.input)
         return output
 
-    def save_network(self, rank, save_file=True):
-        if self.rank == 0:
+    def save_network(self, save_file=True):
+        if is_logging_process():
             net = self.net.module if isinstance(self.net, DDP) else self.net
             state_dict = net.state_dict()
             for key, param in state_dict.items():
@@ -77,11 +77,11 @@ class Model:
                 torch.save(state_dict, save_path)
                 if self.cfg.log.use_wandb:
                     wandb.save(save_path)
-                if rank == 0:
+                if is_logging_process():
                     logger.info("Saved network checkpoint to: %s" % save_path)
             return state_dict
 
-    def load_network(self, loaded_net=None, rank=-1):
+    def load_network(self, loaded_net=None):
         add_log = False
         if loaded_net is None:
             add_log = True
@@ -102,14 +102,14 @@ class Model:
                 loaded_clean_net[k] = v
 
         self.net.load_state_dict(loaded_clean_net, strict=self.cfg.load.strict_load)
-        if rank == 0 and add_log:
+        if is_logging_process() and add_log:
             logger.info("Checkpoint %s is loaded" % self.cfg.load.network_chkpt_path)
 
-    def save_training_state(self, rank):
-        if self.rank == 0:
+    def save_training_state(self):
+        if is_logging_process():
             save_filename = "%s_%d.state" % (self.cfg.name, self.step)
             save_path = osp.join(self.cfg.log.chkpt_dir, save_filename)
-            net_state_dict = self.save_network(None, False)
+            net_state_dict = self.save_network(False)
             state = {
                 "model": net_state_dict,
                 "optimizer": self.optimizer.state_dict(),
@@ -119,10 +119,10 @@ class Model:
             torch.save(state, save_path)
             if self.cfg.log.use_wandb:
                 wandb.save(save_path)
-            if rank == 0:
+            if is_logging_process():
                 logger.info("Saved training state to: %s" % save_path)
 
-    def load_training_state(self, rank):
+    def load_training_state(self):
         if self.cfg.load.wandb_load_path is not None:
             self.cfg.load.resume_state_path = wandb.restore(
                 self.cfg.load.resume_state_path,
@@ -133,11 +133,11 @@ class Model:
             map_location=torch.device(self.device),
         )
 
-        self.load_network(loaded_net=resume_state["model"], rank=rank)
+        self.load_network(loaded_net=resume_state["model"])
         self.optimizer.load_state_dict(resume_state["optimizer"])
         self.step = resume_state["step"]
         self.epoch = resume_state["epoch"]
-        if rank == 0:
+        if is_logging_process():
             logger.info(
                 "Resuming from training state: %s" % self.cfg.load.resume_state_path
             )

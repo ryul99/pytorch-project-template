@@ -1,11 +1,12 @@
 import torch
 import logging
 import os
+from utils.utils import is_logging_process
 
 logger = logging.getLogger(os.path.basename(__file__))
 
 
-def test_model(cfg, model, test_loader, writer, rank):
+def test_model(cfg, model, test_loader, writer):
     model.net.eval()
     total_test_loss = 0
     test_loop_len = 0
@@ -25,5 +26,5 @@ def test_model(cfg, model, test_loader, writer, rank):
 
         if writer is not None:
             writer.logging_with_step(total_test_loss, model.step, "test_loss")
-        if rank == 0:
+        if is_logging_process():
             logger.info("Test Loss %.04f at step %d" % (total_test_loss, model.step))

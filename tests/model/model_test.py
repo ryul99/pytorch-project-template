@@ -61,14 +61,14 @@ class TestModel(ProjectTestCase):
         self.loss_f = nn.MSELoss()
         local_model = Model(self.cfg, local_net, self.loss_f)
 
-        self.model.save_network(0)
+        self.model.save_network()
         save_filename = "%s_%d.pt" % (self.cfg.name, self.model.step)
         save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
         self.cfg.load.network_chkpt_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
 
-        local_model.load_network(rank=0)
+        local_model.load_network()
         parameters = zip(
             list(local_model.net.parameters()), list(self.model.net.parameters())
         )
@@ -80,14 +80,14 @@ class TestModel(ProjectTestCase):
         self.loss_f = nn.MSELoss()
         local_model = Model(self.cfg, local_net, self.loss_f)
 
-        self.model.save_training_state(0)
+        self.model.save_training_state()
         save_filename = "%s_%d.state" % (self.cfg.name, self.model.step)
         save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
         self.cfg.load.resume_state_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
 
-        local_model.load_training_state(rank=0)
+        local_model.load_training_state()
         parameters = zip(
             list(local_model.net.parameters()), list(self.model.net.parameters())
         )
