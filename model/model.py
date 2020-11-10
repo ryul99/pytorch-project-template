@@ -37,7 +37,7 @@ class Model:
 
         # init loss
         self.loss_f = loss_f
-        self.log = DotDict()
+        self.log = OmegaConf.create()
 
     def feed_data(self, **data):  # data's keys: input, GT
         for k, v in data.items():
