@@ -4,13 +4,11 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 from collections import OrderedDict
 import os.path as osp
+from omegaconf import OmegaConf
 import wandb
-import logging
+import os
 
-from utils.utils import DotDict, is_logging_process
-
-
-logger = logging.getLogger(osp.basename(__file__))
+from utils.utils import is_logging_process, get_logger
 
 
 class Model:
@@ -25,6 +23,7 @@ class Model:
         self.GT = None
         self.step = 0
         self.epoch = -1
+        self._logger = get_logger(cfg, os.path.basename(__file__))
 
         # init optimizer
         optimizer_mode = self.cfg.train.optimizer.mode
@@ -78,7 +77,7 @@ class Model:
                 if self.cfg.log.use_wandb:
                     wandb.save(save_path)
                 if is_logging_process():
-                    logger.info("Saved network checkpoint to: %s" % save_path)
+                    self._logger.info("Saved network checkpoint to: %s" % save_path)
             return state_dict
 
     def load_network(self, loaded_net=None):
@@ -103,7 +102,9 @@ class Model:
 
         self.net.load_state_dict(loaded_clean_net, strict=self.cfg.load.strict_load)
         if is_logging_process() and add_log:
-            logger.info("Checkpoint %s is loaded" % self.cfg.load.network_chkpt_path)
+            self._logger.info(
+                "Checkpoint %s is loaded" % self.cfg.load.network_chkpt_path
+            )
 
     def save_training_state(self):
         if is_logging_process():
@@ -120,7 +121,7 @@ class Model:
             if self.cfg.log.use_wandb:
                 wandb.save(save_path)
             if is_logging_process():
-                logger.info("Saved training state to: %s" % save_path)
+                self._logger.info("Saved training state to: %s" % save_path)
 
     def load_training_state(self):
         if self.cfg.load.wandb_load_path is not None:
@@ -138,6 +139,6 @@ class Model:
         self.step = resume_state["step"]
         self.epoch = resume_state["epoch"]
         if is_logging_process():
-            logger.info(
+            self._logger.info(
                 "Resuming from training state: %s" % self.cfg.load.resume_state_path
             )

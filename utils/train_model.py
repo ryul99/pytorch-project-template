@@ -1,12 +1,10 @@
 import math
-import logging
 import os
-from utils.utils import is_logging_process
-
-logger = logging.getLogger(os.path.basename(__file__))
+from utils.utils import is_logging_process, get_logger
 
 
 def train_model(cfg, model, train_loader, writer):
+    logger = get_logger(cfg, os.path.basename(__file__))
     model.net.train()
     for input_, target in train_loader:
         model.feed_data(input=input_, GT=target)

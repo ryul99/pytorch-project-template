@@ -1,12 +1,10 @@
 import torch
-import logging
 import os
-from utils.utils import is_logging_process
-
-logger = logging.getLogger(os.path.basename(__file__))
+from utils.utils import is_logging_process, get_logger
 
 
 def test_model(cfg, model, test_loader, writer):
+    logger = get_logger(cfg, os.path.basename(__file__))
     model.net.eval()
     total_test_loss = 0
     test_loop_len = 0
