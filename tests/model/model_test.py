@@ -28,8 +28,8 @@ class TestModel(ProjectTestCase):
         assert self.model.loss_f == self.loss_f
 
     def test_feed_data(self):
-        device_input_ = self.input_.to(self.cfg.train.model.device)
-        device_gt = self.gt.to(self.cfg.train.model.device)
+        device_input_ = self.input_.to(self.cfg.device)
+        device_gt = self.gt.to(self.cfg.device)
         self.model.feed_data(input=self.input_)
         assert (self.model.input == device_input_).all()
         self.model.feed_data(GT=self.gt)
@@ -62,9 +62,9 @@ class TestModel(ProjectTestCase):
         local_model = Model(self.cfg, local_net, self.loss_f)
 
         self.model.save_network(0)
-        save_filename = "%s_%d.pt" % (self.cfg.train.name, self.model.step)
-        save_path = os.path.join(self.cfg.train.log.chkpt_dir, save_filename)
-        self.cfg.train.load.network_chkpt_path = save_path
+        save_filename = "%s_%d.pt" % (self.cfg.name, self.model.step)
+        save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
+        self.cfg.load.network_chkpt_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
 
@@ -81,9 +81,9 @@ class TestModel(ProjectTestCase):
         local_model = Model(self.cfg, local_net, self.loss_f)
 
         self.model.save_training_state(0)
-        save_filename = "%s_%d.state" % (self.cfg.train.name, self.model.step)
-        save_path = os.path.join(self.cfg.train.log.chkpt_dir, save_filename)
-        self.cfg.train.load.resume_state_path = save_path
+        save_filename = "%s_%d.state" % (self.cfg.name, self.model.step)
+        save_path = os.path.join(self.cfg.log.chkpt_dir, save_filename)
+        self.cfg.load.resume_state_path = save_path
 
         assert os.path.exists(save_path) and os.path.isfile(save_path)
 

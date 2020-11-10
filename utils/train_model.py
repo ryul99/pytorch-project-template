@@ -17,7 +17,7 @@ def train_model(cfg, model, train_loader, writer, rank):
             logger.error("Loss exploded to %.02f at step %d!" % (loss, model.step))
             raise Exception("Loss exploded")
 
-        if model.step % cfg.train.log.summary_interval == 0:
+        if model.step % cfg.log.summary_interval == 0:
             if writer is not None:
                 writer.logging_with_step(loss, model.step, "train_loss")
             if rank == 0:
