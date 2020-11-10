@@ -22,12 +22,12 @@ class ProjectTestCase:
         # set cfg
         with initialize(config_path="../config"):
             self.cfg = compose(
-                config_name="train", overrides=[f"train.working_dir={self.working_dir}"]
+                config_name="default", overrides=[f"working_dir={self.working_dir}"]
             )
-        self.cfg.train.model.device = "cpu"
-        self.cfg.train.log.chkpt_dir = str(chkpt_dir)
-        self.cfg.train.log.use_wandb = False
-        self.cfg.train.log.use_tensorboard = False
+        self.cfg.device = "cpu"
+        self.cfg.log.chkpt_dir = str(chkpt_dir)
+        self.cfg.log.use_wandb = False
+        self.cfg.log.use_tensorboard = False
 
         # set logger
         self.logger = logging.getLogger(os.path.basename(__file__))
