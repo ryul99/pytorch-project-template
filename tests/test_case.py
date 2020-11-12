@@ -6,6 +6,7 @@ import shutil
 import tempfile
 from utils.utils import get_logger
 from hydra.experimental import initialize, compose
+from omegaconf import OmegaConf, open_dict
 
 TEST_DIR = tempfile.mkdtemp(prefix="project_tests")
 
@@ -29,12 +30,32 @@ class ProjectTestCase:
         self.cfg.log.use_wandb = False
         self.cfg.log.use_tensorboard = False
 
-        # set logger
-        self.logger = get_logger(
-            self.cfg,
-            os.path.basename(__file__),
-            str((self.working_dir / "trainer.log").resolve()),
+        # load job_logging_cfg
+        project_root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        hydra_conf = OmegaConf.load(
+            os.path.join(project_root_path, "config/default.yaml")
         )
+        job_logging_name = None
+        for job_logging in hydra_conf.defaults:
+            job_logging_name = job_logging.get("hydra/job_logging")
+            if job_logging_name is not None:
+                break
+        job_logging_cfg_path = os.path.join(
+            project_root_path,
+            "config/hydra/job_logging",
+            str(job_logging_name) + ".yaml",
+        )
+        if os.path.exists(job_logging_cfg_path):
+            job_logging_cfg = OmegaConf.load(job_logging_cfg_path)
+        else:
+            job_logging_cfg = dict()
+        with open_dict(self.cfg):
+            self.cfg.job_logging_cfg = job_logging_cfg
+        self.cfg.job_logging_cfg.handlers.file.filename = str(
+            (self.working_dir / "trainer.log").resolve()
+        )
+        # set logger
+        self.logger = get_logger(self.cfg, os.path.basename(__file__))
 
     def teardown_method(self):
         shutil.rmtree(self.TEST_DIR)

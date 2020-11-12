@@ -11,7 +11,7 @@ import torch
 import torchvision
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, open_dict
 
 from model.model_arch import Net_arch
 from model.model import Model
@@ -20,6 +20,7 @@ from utils.test_model import test_model
 from utils.utils import set_random_seed, is_logging_process, get_logger
 from utils.writer import Writer
 from dataset.dataloader import create_dataloader, DataloaderMode
+from hydra.core.hydra_config import HydraConfig
 
 
 def setup(cfg, rank):
@@ -139,7 +140,8 @@ def train_loop(rank, cfg):
 @hydra.main(config_path="config", config_name="default")
 def main(hydra_cfg):
     hydra_cfg.device = hydra_cfg.device.lower()
-
+    with open_dict(hydra_cfg):
+        hydra_cfg.job_logging_cfg = HydraConfig.get().job_logging
     # random seed
     if hydra_cfg.random_seed is None:
         hydra_cfg.random_seed = random.randint(1, 10000)
