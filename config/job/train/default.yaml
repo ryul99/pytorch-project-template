@@ -1,3 +1,4 @@
+# @package _global_
 name: 'First_training'
 working_dir: ???
 device: 'cuda'
