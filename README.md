@@ -37,9 +37,11 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 
 ### Config
 
-- Config is written in yaml file(default: `config/default.yaml`)
+- Config is written in yaml file
+    - You can choose configs at `config/default.yaml`. Custom configs are under `config/job/`
 - `name` is train name you run.
 - `working_dir` is root directory for saving checkpoints, logging logs.
+- `device` is device mode for running your model. You can choose `cpu` or `cuda`
 - `data` field
     - Configs for Dataloader.
     - glob `train_dir` / `test_dir` with `file_format` for Dataloader.
@@ -57,7 +59,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
         - `timeout` is seconds for timeout of process interaction in DDP.
         When this is set as `~`, default timeout (1800 seconds) is applied in `gloo` mode and timeout is turned off in `nccl` mode.
 - `model` field
-    - Configs for Network architecture and options for model like device.
+    - Configs for Network architecture and options for model.
     - You can add configs in yaml format to config your network.
 - `log` field
     - Configs for logging include tensorboard / wandb logging. 
@@ -79,7 +81,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 
 ## Train
 
-- `python trainer.py train.working_dir=$(pwd)`
+- `python trainer.py working_dir=$(pwd)`
 
 ## Inspired by
 

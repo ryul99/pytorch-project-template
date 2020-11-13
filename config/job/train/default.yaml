@@ -23,6 +23,8 @@ train:
 test:
   num_workers: 4
   batch_size: 64
+model:
+  ~
 dist:
   master_addr: 'localhost'
   master_port: '12355'
