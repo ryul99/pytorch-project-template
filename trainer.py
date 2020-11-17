@@ -75,13 +75,13 @@ def train_loop(rank, cfg):
         # download MNIST dataset before making dataloader
         # TODO: This is example code. You should change this part as you need
         _ = torchvision.datasets.MNIST(
-            root="dataset/meta",
+            root=hydra.utils.to_absolute_path("dataset/meta"),
             train=True,
             transform=torchvision.transforms.ToTensor(),
             download=True,
         )
         _ = torchvision.datasets.MNIST(
-            root="dataset/meta",
+            root=hydra.utils.to_absolute_path("dataset/meta"),
             train=False,
             transform=torchvision.transforms.ToTensor(),
             download=True,

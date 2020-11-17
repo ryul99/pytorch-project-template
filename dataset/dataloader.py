@@ -6,6 +6,7 @@ import glob
 import os
 from enum import Enum, auto
 from prefetch_generator import BackgroundGenerator
+import hydra
 
 
 class DataloaderMode(Enum):
@@ -63,7 +64,7 @@ class Dataset_(Dataset):
             # self.data_dir = self.cfg.data.train_dir
             # TODO: This is example code. You should change this part as you need
             self.dataset = torchvision.datasets.MNIST(
-                root="dataset/meta",
+                root=hydra.utils.to_absolute_path("dataset/meta"),
                 train=True,
                 transform=torchvision.transforms.ToTensor(),
                 download=False,
@@ -72,7 +73,7 @@ class Dataset_(Dataset):
             # self.data_dir = self.cfg.data.test_dir
             # TODO: This is example code. You should change this part as you need
             self.dataset = torchvision.datasets.MNIST(
-                root="dataset/meta",
+                root=hydra.utils.to_absolute_path("dataset/meta"),
                 train=False,
                 transform=torchvision.transforms.ToTensor(),
                 download=False,
