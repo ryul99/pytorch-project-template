@@ -1,26 +1,26 @@
-import datetime
 import argparse
-import yaml
+import datetime
 import itertools
-import traceback
-import random
 import os
+import random
+import traceback
 
 import hydra
 import torch
-import torchvision
 import torch.distributed as dist
 import torch.multiprocessing as mp
+import torchvision
+import yaml
+from hydra.core.hydra_config import HydraConfig
 from omegaconf import OmegaConf, open_dict
 
-from model.model_arch import Net_arch
+from dataset.dataloader import DataloaderMode, create_dataloader
 from model.model import Model
-from utils.train_model import train_model
+from model.model_arch import Net_arch
 from utils.test_model import test_model
-from utils.utils import set_random_seed, is_logging_process, get_logger
+from utils.train_model import train_model
+from utils.utils import get_logger, is_logging_process, set_random_seed
 from utils.writer import Writer
-from dataset.dataloader import create_dataloader, DataloaderMode
-from hydra.core.hydra_config import HydraConfig
 
 
 def setup(cfg, rank):

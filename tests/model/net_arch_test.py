@@ -1,7 +1,9 @@
-import torch
-import tempfile
 import os
-from hydra.experimental import initialize, compose
+import tempfile
+
+import torch
+from hydra.experimental import compose, initialize
+
 from model.model_arch import Net_arch
 
 TEST_DIR = tempfile.mkdtemp(prefix="project_tests")

@@ -1,10 +1,12 @@
+import os
+
 import pytest
 import torch
 import torch.nn as nn
-import os
-from tests.test_case import ProjectTestCase
-from model.model_arch import Net_arch
+
 from model.model import Model
+from model.model_arch import Net_arch
+from tests.test_case import ProjectTestCase
 
 
 class TestModel(ProjectTestCase):

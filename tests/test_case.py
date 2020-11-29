@@ -4,9 +4,11 @@ import os
 import pathlib
 import shutil
 import tempfile
-from utils.utils import get_logger
-from hydra.experimental import initialize, compose
+
+from hydra.experimental import compose, initialize
 from omegaconf import OmegaConf, open_dict
+
+from utils.utils import get_logger
 
 TEST_DIR = tempfile.mkdtemp(prefix="project_tests")
 

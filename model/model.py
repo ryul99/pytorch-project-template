@@ -1,14 +1,14 @@
+import os
+import os.path as osp
+from collections import OrderedDict
+
 import torch
 import torch.nn
+import wandb
+from omegaconf import OmegaConf
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from collections import OrderedDict
-import os.path as osp
-from omegaconf import OmegaConf
-import wandb
-import os
-
-from utils.utils import is_logging_process, get_logger
+from utils.utils import get_logger, is_logging_process
 
 
 class Model:

@@ -1,6 +1,8 @@
-import torch
 import os
-from utils.utils import is_logging_process, get_logger
+
+import torch
+
+from utils.utils import get_logger, is_logging_process
 
 
 def test_model(cfg, model, test_loader, writer):

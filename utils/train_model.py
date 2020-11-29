@@ -1,6 +1,7 @@
 import math
 import os
-from utils.utils import is_logging_process, get_logger
+
+from utils.utils import get_logger, is_logging_process
 
 
 def train_model(cfg, model, train_loader, writer):

@@ -1,12 +1,13 @@
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.data.distributed import DistributedSampler
-import torch
-import torchvision
 import glob
 import os
 from enum import Enum, auto
-from prefetch_generator import BackgroundGenerator
+
 import hydra
+import torch
+import torchvision
+from prefetch_generator import BackgroundGenerator
+from torch.utils.data import DataLoader, Dataset
+from torch.utils.data.distributed import DistributedSampler
 
 
 class DataloaderMode(Enum):
