@@ -27,12 +27,3 @@ def get_logger(cfg, name=None):
             OmegaConf.to_container(cfg.job_logging_cfg, resolve=True)
         )
         return logging.getLogger(name)
-
-
-def get_timestamp():
-    return datetime.now().strftime("%y%m%d-%H%M%S")
-
-
-def get_commit_hash():
-    message = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
-    return message.strip().decode("utf-8")
