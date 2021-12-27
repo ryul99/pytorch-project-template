@@ -11,7 +11,7 @@
 
 ## Feature
 
-- TensorBoardX / [wandb](https://www.wandb.com/) support
+- TensorBoard / [wandb](https://www.wandb.com/) support
 - Background generator is used ([reason of using background generator](https://github.com/IgorSusmelj/pytorch-styleguide/issues/5))
   - In Windows, background generator could not be supported. So if error occurs, set false to `use_background_generator` in config
 - Training state and network checkpoint saving, loading
