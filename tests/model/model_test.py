@@ -12,8 +12,8 @@ from tests.test_case import ProjectTestCase
 class TestModel(ProjectTestCase):
     @classmethod
     def setup_class(cls):
-        cls.input_ = torch.rand(8, 1, 28, 28)
-        cls.gt = torch.randint(9, (8,))
+        cls.model_input = torch.rand(8, 1, 28, 28)
+        cls.model_target = torch.randint(9, (8,))
 
     def setup_method(self, method):
         super(TestModel, self).setup_method()
@@ -26,34 +26,20 @@ class TestModel(ProjectTestCase):
         assert self.model.net == self.net
         assert self.model.loss_f == self.loss_f
 
-    def test_feed_data(self):
-        device_input_ = self.input_.to(self.cfg.device)
-        device_gt = self.gt.to(self.cfg.device)
-        self.model.feed_data(input=self.input_)
-        assert (self.model.input == device_input_).all()
-        self.model.feed_data(GT=self.gt)
-        assert (self.model.GT == device_gt).all()
-        self.model.feed_data()
-        assert self.model.input is None
-        assert self.model.GT is None
-        self.model.feed_data(input=self.input_, GT=self.gt)
-        assert (self.model.input == device_input_).all()
-        assert (self.model.GT == device_gt).all()
-
     def test_run_network(self):
-        self.model.feed_data(input=self.input_, GT=self.gt)
-        output = self.model.run_network()
-        assert output.shape == self.model.GT.shape + (10,)
+        output = self.model.run_network(self.model_input.to(self.cfg.device))
+        assert output.shape == self.model_target.shape + (10,)
 
     def test_optimize_parameters(self):
-        self.model.feed_data(input=self.input_, GT=self.gt)
-        self.model.optimize_parameters()
+        self.model.optimize_parameters(
+            self.model_input.to(self.cfg.device),
+            self.model_target.to(self.cfg.device),
+        )
         assert self.model.log.loss_v is not None
 
     def test_inference(self):
-        self.model.feed_data(input=self.input_, GT=self.gt)
-        output = self.model.inference()
-        assert output.shape == self.model.GT.shape + (10,)
+        output = self.model.inference(self.model_input.to(self.cfg.device))
+        assert output.shape == self.model_target.shape + (10,)
 
     def test_save_load_network(self):
         local_net = Net_arch(self.cfg)

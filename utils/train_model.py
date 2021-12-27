@@ -7,9 +7,8 @@ from utils.utils import get_logger, is_logging_process
 def train_model(cfg, model, train_loader, writer):
     logger = get_logger(cfg, os.path.basename(__file__))
     model.net.train()
-    for input_, target in train_loader:
-        model.feed_data(input=input_, GT=target)
-        model.optimize_parameters()
+    for model_input, model_target in train_loader:
+        model.optimize_parameters(model_input, model_target)
         loss = model.log.loss_v
         model.step += 1
 
