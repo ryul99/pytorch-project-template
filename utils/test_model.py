@@ -11,10 +11,9 @@ def test_model(cfg, model, test_loader, writer):
     total_test_loss = 0
     test_loop_len = 0
     with torch.no_grad():
-        for model_input, target in test_loader:
-            model.feed_data(input=model_input, GT=target)
-            output = model.run_network()
-            loss_v = model.loss_f(output, model.GT)
+        for model_input, model_target in test_loader:
+            output = model.inference(model_input)
+            loss_v = model.loss_f(output, model_target.to(cfg.device))
             if cfg.dist.gpus > 0:
                 # Aggregate loss_v from all GPUs. loss_v is set as the sum of all GPUs' loss_v.
                 torch.distributed.all_reduce(loss_v)

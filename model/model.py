@@ -19,8 +19,6 @@ class Model:
         self.rank = rank
         if self.device != "cpu" and self.cfg.dist.gpus != 0:
             self.net = DDP(self.net, device_ids=[self.rank])
-        self.input = None
-        self.GT = None
         self.step = 0
         self.epoch = -1
         self._logger = get_logger(cfg, os.path.basename(__file__))
@@ -38,30 +36,24 @@ class Model:
         self.loss_f = loss_f
         self.log = OmegaConf.create()
 
-    def feed_data(self, **data):  # data's keys: input, GT
-        for k, v in data.items():
-            data[k] = v.to(self.device)
-        self.input = data.get("input")
-        self.GT = data.get("GT")
-
-    def optimize_parameters(self):
+    def optimize_parameters(self, model_input, model_target):
         self.net.train()
         self.optimizer.zero_grad()
-        output = self.run_network()
-        loss_v = self.loss_f(output, self.GT)
+        output = self.run_network(model_input)
+        loss_v = self.loss_f(output, model_target.to(self.device))
         loss_v.backward()
         self.optimizer.step()
-
         # set log
         self.log.loss_v = loss_v.item()
 
-    def inference(self):
+    def inference(self, model_input):
         self.net.eval()
-        output = self.run_network()
+        output = self.run_network(model_input)
         return output
 
-    def run_network(self):
-        output = self.net(self.input)
+    def run_network(self, model_input):
+        model_input = model_input.to(self.device)
+        output = self.net(model_input)
         return output
 
     def save_network(self, save_file=True):
