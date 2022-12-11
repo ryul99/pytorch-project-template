@@ -35,6 +35,7 @@ class Model:
         # init loss
         self.loss_f = loss_f
         self.log = OmegaConf.create()
+        self.log.loss_v = 0
 
     def optimize_parameters(self, model_input, model_target):
         self.net.train()

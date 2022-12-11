@@ -26,4 +26,7 @@ def test_model(cfg, model, test_loader, writer):
         if writer is not None:
             writer.logging_with_step(total_test_loss, model.step, "test_loss")
         if is_logging_process():
-            logger.info("Test Loss %.04f at step %d" % (total_test_loss, model.step))
+            logger.info(
+                "Test Loss %.04f at (epoch: %d / step: %d)"
+                % (total_test_loss, model.epoch, model.step)
+            )
