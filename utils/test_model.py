@@ -28,5 +28,5 @@ def test_model(cfg, model, test_loader, writer):
         if is_logging_process():
             logger.info(
                 "Test Loss %.04f at (epoch: %d / step: %d)"
-                % (total_test_loss, model.epoch, model.step)
+                % (total_test_loss, model.epoch + 1, model.step)
             )
