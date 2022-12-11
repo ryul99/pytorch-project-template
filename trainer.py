@@ -137,7 +137,7 @@ def train_loop(rank, cfg):
             cleanup()
 
 
-@hydra.main(config_path="config", config_name="default")
+@hydra.main(version_base="1.2", config_path="config", config_name="default")
 def main(hydra_cfg):
     hydra_cfg.device = hydra_cfg.device.lower()
     with open_dict(hydra_cfg):
