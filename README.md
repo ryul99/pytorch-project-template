@@ -41,7 +41,7 @@ Just copy & paste `Net_arch.forward` method to  `net_arch_test.py` and add `asse
 
 ### Install requirements
 
-- python3 (3.6, 3.7, 3.8 is tested)
+- python3 (3.8, 3.9, 3.10, 3.11 is tested)
 - Write PyTorch version which you want to `requirements.txt`. (https://pytorch.org/get-started/)
 - `pip install -r requirements.txt`
 
