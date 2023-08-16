@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="assets/icon.jpg"/>
+    <img src="assets/icon.png"/>
     <h1><code>Pytorch Project Template</code></h1>
     <p>
         <img src="https://img.shields.io/github/license/ryul99/pytorch-project-template"/>
