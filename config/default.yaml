@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - _self_
   - job: train
   - override hydra/job_logging: custom
   - override hydra/hydra_logging: colorlog
