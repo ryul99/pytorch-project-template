@@ -1,6 +1,6 @@
 <div align="center">
     <img src="assets/icon.png"/>
-    <code><h1>Pytorch Project Template</code></h1>
+    <h1><code>Pytorch Project Template</code></h1>
     <p>
         <img src="https://img.shields.io/github/license/ryul99/pytorch-project-template"/>
         <a href="https://pycqa.github.io/isort/"><img src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336"/></a>
