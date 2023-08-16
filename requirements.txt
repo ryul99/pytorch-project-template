@@ -1,6 +1,6 @@
 numpy
 pyyaml
-sklearn
+scikit-learn
 matplotlib
 prefetch_generator
 wandb
@@ -8,5 +8,5 @@ torch
 torchvision
 tensorboard
 hydra-core
-hydra_colorlog 
+hydra_colorlog
 omegaconf
